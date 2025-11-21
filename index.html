@@ -22,7 +22,8 @@
 
     <!-- Main Container -->
     <div id="app-container" class="w-full max-w-lg bg-white shadow-xl rounded-xl p-6 md:p-10">
-        <h1 class="text-3xl font-bold text-center text-indigo-700 mb-6">कृष्ण बलराम हॉल</h1>
+        <!-- UPDATED TITLE -->
+        <h1 class="text-3xl font-bold text-center text-indigo-700 mb-6">इस्कॉन उज्जैन मंदिर हॉल</h1>
 
         <!-- Loading State -->
         <div id="loading-state" class="text-center py-10">
@@ -81,13 +82,7 @@
                 <div><label class="block text-sm font-medium text-gray-700 mb-1">पता (Address)</label><textarea id="full_address" name="full_address" rows="2" required placeholder="अपना पूरा पता यहाँ लिखें" class="w-full p-3 border border-gray-300 rounded-lg"></textarea></div>
                 <div><label class="block text-sm font-medium text-gray-700 mb-1">आप मंदिर में किस भक्त से जुड़े हैं?</label><textarea id="address" name="address" rows="2" required placeholder="भक्त का नाम लिखें" class="w-full p-3 border border-gray-300 rounded-lg"></textarea></div>
                 
-                <!-- Gemini Feature -->
-                <div class="border p-4 rounded-lg bg-yellow-50 border-yellow-200 space-y-3">
-                    <p class="text-sm font-medium text-gray-700">संदेश कार्ड पर व्यक्तिगत संदेश जोड़ें।</p>
-                    <p id="welcome-message-output" class="text-xs text-yellow-800 italic">[यहाँ संदेश जेनरेट होगा]</p>
-                    <button type="button" onclick="fetchWelcomeMessage()" id="message-button" class="w-full bg-yellow-600 text-white py-2 rounded-lg font-semibold hover:bg-yellow-700 disabled:bg-yellow-400 flex items-center justify-center"><span class="mr-2">✨ संदेश बनाएँ</span><svg id="message-spinner" class="animate-spin h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></button>
-                    <input type="hidden" id="welcome-message" name="welcome-message" value="">
-                </div>
+                <!-- Gemini Message Feature REMOVED here -->
 
                 <button type="submit" id="submit-button" class="w-full bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 shadow-md">प्रवेश कार्ड बनाएँ</button>
             </form>
@@ -99,9 +94,16 @@
         <div id="card-section" class="hidden">
             <h2 class="text-xl font-semibold text-gray-800 mb-6 text-center">आपका इवेंट प्रवेश कार्ड</h2>
             <div id="entry-card" class="bg-gradient-to-br from-indigo-600 to-purple-700 text-white p-6 rounded-xl shadow-2xl space-y-4">
-                <div class="border-b border-white/30 pb-3 mb-4"><h3 class="text-2xl font-bold">कृष्ण बलराम हॉल</h3><p class="text-lg font-light opacity-90 mt-1">प्रवेश पास</p><p class="text-3xl font-extrabold mt-1" id="card-timestamp"></p></div>
+                <div class="border-b border-white/30 pb-3 mb-4">
+                    <!-- UPDATED CARD TITLE -->
+                    <h3 class="text-2xl font-bold">इस्कॉन उज्जैन मंदिर हॉल</h3>
+                    <p class="text-lg font-light opacity-90 mt-1">प्रवेश पास</p>
+                    <p class="text-3xl font-extrabold mt-1" id="card-timestamp"></p>
+                </div>
                 <div class="space-y-2"><p class="text-sm font-light">उपस्थित व्यक्ति का नाम:</p><p id="card-name" class="text-xl font-extrabold"></p></div>
-                <div class="space-y-1 pt-2 border-t border-white/30" id="card-message-container"><p class="text-xs font-light opacity-80">विशेष संदेश:</p><p id="card-welcome-message" class="font-medium text-sm italic"></p></div>
+                
+                <!-- Message Container REMOVED from card -->
+
                 <div class="grid grid-cols-2 gap-4 pt-2 border-t border-white/30"><div><p class="text-xs font-light opacity-80">संपर्क नंबर</p><p id="card-contact" class="font-medium text-base"></p></div><div><p class="text-xs font-light opacity-80">भक्त से जुड़े:</p><p id="card-address" class="font-medium text-sm"></p></div></div>
                 <div class="pt-2"><p class="text-xs font-light opacity-80">पता:</p><p id="card-full-address" class="font-medium text-sm"></p></div>
                 <div class="pt-2 border-t border-white/20"><p class="text-xs font-light opacity-80">उपयोगकर्ता आईडी</p><p id="card-user-id" class="font-light text-xs opacity-70 truncate"></p></div>
@@ -152,10 +154,6 @@
         const errorMessage = document.getElementById('error-message');
         const adminLoginForm = document.getElementById('admin-login-form');
         const adminErrorElement = document.getElementById('admin-error-message');
-        const welcomeMessageInput = document.getElementById('welcome-message');
-        const welcomeMessageOutput = document.getElementById('welcome-message-output');
-        const messageButton = document.getElementById('message-button');
-        const messageSpinner = document.getElementById('message-spinner');
         const summaryButton = document.getElementById('summary-button');
         const summarySpinner = document.getElementById('summary-spinner');
         const summaryOutput = document.getElementById('summary-output');
@@ -175,7 +173,7 @@
             document.getElementById('card-full-address').textContent = data.full_address || "";
             document.getElementById('card-user-id').textContent = data.userId; 
             document.getElementById('card-timestamp').textContent = window.formatTimestamp(data.timestamp);
-            document.getElementById('card-welcome-message').textContent = data.welcomeMessage || "आपका स्वागत है!";
+            
             loadingState.classList.add('hidden');
             formSection.classList.add('hidden');
             adminDashboardSection.classList.add('hidden');
@@ -245,15 +243,13 @@
             try {
                 const formData = new FormData(form);
                 const timestamp = new Date().toISOString();
-                const welcomeMessage = welcomeMessageInput.value || "जय श्री कृष्णा!";
                 const data = {
                     name: formData.get('name').trim(),
                     contact: formData.get('contact').trim(),
                     full_address: formData.get('full_address').trim(),
                     address: formData.get('address').trim(),
                     timestamp: timestamp,
-                    userId: userId, 
-                    welcomeMessage: welcomeMessage
+                    userId: userId
                 };
                 
                 const privateCardPath = `artifacts/${appId}/users/${userId}/registrations/entryCard`;
@@ -376,8 +372,6 @@
         }
         window.handleNewRegistration = handleNewRegistration;
         
-        async function fetchWelcomeMessage() { /* ... */ }
-        window.fetchWelcomeMessage = fetchWelcomeMessage;
         async function fetchAdminSummary() { /* ... */ }
         window.fetchAdminSummary = fetchAdminSummary;
 
