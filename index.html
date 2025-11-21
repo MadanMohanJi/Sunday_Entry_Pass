@@ -69,6 +69,13 @@
                     </svg>
                     Excel/CSV डाउनलोड करें
                 </button>
+
+                <button onclick="clearAllData()" id="clear-data-btn" class="w-full bg-red-600 text-white py-2 rounded-lg font-semibold hover:bg-red-700 flex items-center justify-center border border-red-800">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    सारा डेटा साफ़ करें (Clear All)
+                </button>
             </div>
 
             <div class="max-h-80 overflow-y-auto bg-white rounded-lg shadow border">
@@ -151,7 +158,8 @@
 
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, onSnapshot, collection, addDoc, getDocs, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        // ADDED 'writeBatch' to imports
+        import { getFirestore, doc, setDoc, onSnapshot, collection, addDoc, getDocs, getDoc, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         
         const PROJECT_FIREBASE_CONFIG = {
             apiKey: "AIzaSyBOc6EeIc59S6COb80NJfYyl3GdRiI2H6k",
@@ -241,7 +249,6 @@
             adminDashboardSection.classList.add('hidden');
             adminLoginSection.classList.remove('hidden');
             
-            // FIXED: Just reset form, do NOT pre-fill values
             adminLoginForm.reset();
             adminErrorElement.classList.add('hidden');
         }
@@ -284,12 +291,8 @@
                 return;
             }
 
-            // Define CSV Headers
             const headers = ["Name", "Contact", "Linked Devotee", "Address", "Timestamp", "User ID"];
-            
-            // Map data to CSV rows
             const rows = allAttendeesData.map(row => {
-                // Escape double quotes within content and wrap fields in quotes to handle commas
                 const safe = (text) => `"${(text || "").toString().replace(/"/g, '""')}"`;
                 return [
                     safe(row.name),
@@ -301,10 +304,7 @@
                 ].join(",");
             });
 
-            // Combine headers and rows
             const csvContent = [headers.join(","), ...rows].join("\n");
-
-            // Create Blob and Download Link
             const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
             const url = URL.createObjectURL(blob);
             const link = document.createElement("a");
@@ -315,7 +315,44 @@
             document.body.removeChild(link);
         };
 
-        // 3. Toggle Registration Status
+        // 3. CLEAR DATA FUNCTIONALITY (NEW)
+        window.clearAllData = async function() {
+            if (!confirm("WARNING: This will delete ALL attendee data from the dashboard permanently. This action cannot be undone. Are you sure?")) return;
+            
+            const btn = document.getElementById('clear-data-btn');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = "Deleting...";
+
+            try {
+                const q = collection(db, `artifacts/${appId}/public/data/attendees`);
+                const snapshot = await getDocs(q);
+
+                if (snapshot.empty) {
+                    alert("No data to delete.");
+                    return;
+                }
+
+                // Create a batch for deletion
+                const batch = writeBatch(db);
+                snapshot.docs.forEach((doc) => {
+                    batch.delete(doc.ref);
+                });
+
+                await batch.commit();
+                
+                alert("Successfully cleared all attendee data.");
+                fetchAttendees(); // Refresh table
+
+            } catch (e) {
+                alert("Error clearing data: " + e.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        };
+
+        // 4. Toggle Registration Status
         window.toggleRegistrationStatus = async function() {
             const isChecked = regToggle.checked;
             regStatusText.textContent = isChecked ? "Registration OPEN" : "Registration CLOSED";
@@ -326,7 +363,6 @@
                 await setDoc(doc(db, configPath), { isRegistrationOpen: isChecked }, { merge: true });
             } catch (e) {
                 alert("Error updating settings: " + e.message);
-                // Revert UI if failed
                 regToggle.checked = !isChecked;
             }
         };
@@ -336,12 +372,11 @@
             onSnapshot(doc(db, configPath), (docSnapshot) => {
                 if (docSnapshot.exists()) {
                     const data = docSnapshot.data();
-                    isRegistrationOpen = data.isRegistrationOpen !== false; // Default to true if missing
+                    isRegistrationOpen = data.isRegistrationOpen !== false; 
                 } else {
-                    isRegistrationOpen = true; // Default if doc doesn't exist
+                    isRegistrationOpen = true; 
                 }
                 
-                // Update Admin UI
                 if(document.getElementById('admin-dashboard-section').classList.contains('hidden') === false) {
                      regToggle.checked = isRegistrationOpen;
                      regStatusText.textContent = isRegistrationOpen ? "Registration OPEN" : "Registration CLOSED";
@@ -350,22 +385,18 @@
             });
         }
 
-        // --- EXISTING LOGIC MODIFIED ---
+        // --- EXISTING LOGIC ---
 
         function listenForEntryCard() {
             if (!db || !userId) return;
             if (unsubscribeEntryCard) unsubscribeEntryCard();
-
-            // First check registration status
             fetchRegistrationStatus(); 
 
             const cardPath = `artifacts/${appId}/users/${userId}/registrations/entryCard`;
             unsubscribeEntryCard = onSnapshot(doc(db, cardPath), (docSnapshot) => {
                 if (docSnapshot.exists()) {
-                    // If user HAS a card, show it regardless of closed status
                     renderEntryCard(docSnapshot.data());
                 } else {
-                    // If user has NO card, check if registration is open
                     renderForm(); 
                 }
             }, (error) => {
@@ -432,8 +463,6 @@
             } catch (error) {
                 if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
                     try {
-                        // Attempt create only if strictly user-not-found (First run setup)
-                        // NOTE: In a real production app, remove this 'create' block after your first login!
                         if(error.code === 'auth/user-not-found') {
                              const newUser = await createUserWithEmailAndPassword(auth, email, password);
                              if (newUser.user.email === ADMIN_EMAIL) renderAdminDashboard();
@@ -478,7 +507,7 @@
                 const row = tbody.insertRow();
                 row.insertCell(0).textContent = d.name;
                 row.insertCell(1).textContent = d.contact;
-                row.insertCell(2).textContent = d.address; // This is the 'Connected To' field in your form
+                row.insertCell(2).textContent = d.address; 
                 row.insertCell(3).textContent = window.formatTimestamp(d.timestamp).split(',')[0];
             });
         }
