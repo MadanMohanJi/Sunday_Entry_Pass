@@ -114,18 +114,17 @@
         // Use Debug logging for development
         setLogLevel('Debug');
 
-        // --- EXPLICIT FIREBASE CONFIGURATION ---
-        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-        const firebaseConfig = {
+        // --- EXPLICIT FIREBASE CONFIGURATION (Provided by User) ---
+        const explicitFirebaseConfig = {
             apiKey: "AIzaSyBOc6EeIc59S6COb80NJfYyl3GdRiI2H6k",
             authDomain: "entrycard-1a28a.firebaseapp.com",
             projectId: "entrycard-1a28a",
             storageBucket: "entrycard-1a28a.firebasestorage.app",
             messagingSenderId: "571342230056",
             appId: "1:571342230056:web:de9f4c19cd820cee6cdb1d",
-            measurementId: "G-MQWXKCQ85H"
+            measurementId: "G-MQWXKCQ85H" 
         };
-        // ---------------------------------------
+        // ---------------------------------------------------------
 
         // Global Variables
         // Use the environment's app ID if available, otherwise use the projectId from the config.
@@ -193,6 +192,10 @@
                         console.log("Authenticated as:", userId);
                         // Ensure listenForEntryCard is only called when we have a user
                         listenForEntryCard();
+                    } else {
+                        // Fallback if sign-in failed even after attempt
+                        console.error("Authentication failed: No user object received.");
+                        loadingState.innerHTML = `<p class="text-red-600">प्रमाणीकरण विफल रहा। कृपया ब्राउज़र कंसोल जांचें।</p>`;
                     }
                 });
 
@@ -314,7 +317,7 @@
                 const privateCardPath = `artifacts/${appId}/users/${userId}/registrations/entryCard`;
                 await setDoc(doc(db, privateCardPath), data);
                 
-                // 2. Save data publicly (for organizer export to Excel/CSV)
+                // 2. Save data publicly (for organizer export to Excel/CSV) - THIS REQUIRES THE PUBLIC CREATE RULE
                 // Path: /artifacts/{appId}/public/data/attendees/{unique_doc_id}
                 const publicAttendeeCollection = collection(db, `artifacts/${appId}/public/data/attendees`);
                 // Use addDoc to automatically generate a unique ID for each new entry
