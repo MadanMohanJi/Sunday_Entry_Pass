@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="hi"> <!-- Changed language to Hindi --><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>इवेंट एंट्री पंजीकरण</title> <!-- Event Entry Registration --><!-- Load Tailwind CSS --><script src="https://cdn.tailwindcss.com"></script>
+    <!-- Use Inter font --><style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@100..900&display=swap'); /* Added Devanagari font */
+        body {
+            font-family: 'Noto Sans Devanagari', 'Inter', sans-serif; /* Prioritize Devanagari font */
+            background-color: #f7f7f7;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    <!-- Main Container --><div id="app-container" class="w-full max-w-lg bg-white shadow-xl rounded-xl p-6 md:p-10">
+        <h1 class="text-3xl font-bold text-center text-indigo-700 mb-6">कृष्ण बलराम हॉल</h1> <!-- Krishna Balrama Hall --><!-- Loading State --><div id="loading-state" class="text-center py-10">
+            <svg class="animate-spin h-8 w-8 text-indigo-500 mx-auto mb-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <p class="text-gray-600">एप्लिकेशन लोड हो रहा है...</p> <!-- Loading application... --></div>
+
+        <!-- Form Section --><div id="form-section" class="hidden">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">अपनी प्रविष्टि पंजीकृत करें</h2> <!-- Register Your Entry --><form id="registration-form" class="space-y-5">
+                <div>
+                    <label for="name" class="block text-sm font-medium text-gray-700 mb-1">पूरा नाम</label> <!-- Full Name --><input type="text" id="name" name="name" required placeholder="अपना पूरा नाम दर्ज करें"
+                           class="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 transition duration-150">
+                </div>
+                <div>
+                    <label for="contact" class="block text-sm font-medium text-gray-700 mb-1">संपर्क नंबर</label> <!-- Contact Number --><input type="tel" id="contact" name="contact" required placeholder="अपना संपर्क नंबर दर्ज करें"
+                           class="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 transition duration-150">
+                </div>
+                <div>
+                    <label for="address" class="block text-sm font-medium text-gray-700 mb-1">आप मंदिर में किस भक्त से जुड़े हैं?</label> <!-- Which devotee are you connected with at the temple? --><textarea id="address" name="address" rows="3" required placeholder="भक्त का नाम लिखें"
+                              class="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 transition duration-150"></textarea>
+                </div>
+                <button type="submit" id="submit-button" 
+                        class="w-full bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 transition duration-200 shadow-md disabled:bg-indigo-400">
+                    प्रवेश कार्ड बनाएँ
+                </button> <!-- Generate Entry Card --></form>
+            <p id="error-message" class="text-red-500 text-center mt-3 hidden"></p>
+        </div>
+
+
+        <!-- Entry Card Section --><div id="card-section" class="hidden">
+            <h2 class="text-xl font-semibold text-gray-800 mb-6 text-center">आपका इवेंट प्रवेश कार्ड</h2> <!-- Your Event Entry Card -->
+            
+            <div id="entry-card" class="bg-gradient-to-br from-indigo-600 to-purple-700 text-white p-6 rounded-xl shadow-2xl space-y-4">
+                
+                <!-- UPDATED HEADER BLOCK -->
+                <div class="border-b border-white/30 pb-3 mb-4">
+                    <!-- Title Change: From ENTRY PASS to HALL -->
+                    <h3 class="text-2xl font-bold">कृष्ण बलराम हॉल</h3> 
+                    
+                    <!-- Pass Label Change: From VALID ENTRY to प्रवेश पास -->
+                    <p class="text-lg font-light opacity-90 mt-1">प्रवेश पास</p> 
+                    
+                    <!-- Registration Date (New Header Size) -->
+                    <p class="text-3xl font-extrabold mt-1" id="card-timestamp"></p> 
+                </div>
+
+                <div class="space-y-2">
+                    <p class="text-sm font-light">उपस्थित व्यक्ति का नाम:</p> <!-- ATTENDEE NAME: -->
+                    <p id="card-name" class="text-xl font-extrabold"></p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 pt-2 border-t border-white/30">
+                    <!-- Contact Number -->
+                    <div>
+                        <p class="text-xs font-light opacity-80">संपर्क नंबर</p> <!-- CONTACT NO. -->
+                        <p id="card-contact" class="font-medium text-base"></p>
+                    </div>
+                    <!-- Empty slot removed since Date is now at the top -->
+                    <div></div>
+                </div>
+
+                <div class="pt-2">
+                    <p class="text-xs font-light opacity-80">आप मंदिर में किस भक्त से जुड़े हैं?</p> <!-- Which devotee are you connected with at the temple? -->
+                    <p id="card-address" class="font-medium text-sm"></p>
+                </div>
+                
+                <div class="pt-2">
+                    <p class="text-xs font-light opacity-80">उपयोगकर्ता आईडी (आयोजक संदर्भ के लिए)</p> <!-- USER ID (For Organizer Reference) -->
+                    <p id="card-user-id" class="font-light text-xs opacity-70 truncate"></p>
+                </div>
+            </div>
+            
+            <p class="text-center text-sm text-gray-500 mt-6">
+                आपका पंजीकरण पूर्ण हो गया है और सुरक्षित रूप से संग्रहीत है।
+            </p> <!-- Your registration is complete and securely stored. --><div class="text-center mt-4 space-x-4">
+                <!-- DOWNLOAD BUTTON --><button onclick="downloadCard()" 
+                        class="bg-green-500 text-white py-2 px-4 rounded-lg font-semibold hover:bg-green-600 transition duration-200 shadow-md">
+                    कार्ड डाउनलोड करें
+                </button> <!-- Download Card --><!-- BUTTON TO REGISTER NEW GUEST --><button onclick="handleNewRegistration()" 
+                        class="text-indigo-600 hover:text-indigo-800 text-sm font-medium py-2 px-4">
+                    किसी अन्य अतिथि को पंजीकृत करें
+                </button> <!-- Register Another Guest --></div>
+        </div>
+
+    </div>
+
+    <!-- External Library for converting HTML to Image (Canvas) --><script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <!-- Firebase SDKs --><script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        // Import signOut function
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        // Import collection and addDoc for writing to a public collection
+        import { getFirestore, doc, setDoc, onSnapshot, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        
+        // Use Debug logging for development
+        setLogLevel('Debug');
+
+        // Global Variables provided by the Canvas environment
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        // Firebase Service Instances
+        let app;
+        let db;
+        let auth;
+        let userId = null;
+        let isAuthReady = false;
+
+        // DOM Elements
+        const loadingState = document.getElementById('loading-state');
+        const formSection = document.getElementById('form-section');
+        const cardSection = document.getElementById('card-section');
+        const form = document.getElementById('registration-form');
+        const submitButton = document.getElementById('submit-button');
+        const errorMessage = document.getElementById('error-message');
+        const appContainer = document.getElementById('app-container');
+
+        // --- Core Functions ---
+
+        /**
+         * Initializes Firebase and authenticates the user.
+         */
+        async function initializeAppAndAuth() {
+            try {
+                if (Object.keys(firebaseConfig).length === 0) {
+                    throw new Error("Firebase configuration not available.");
+                }
+
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                
+                // Function to handle sign-in logic (called by onAuthStateChanged)
+                async function handleSignIn() {
+                    if (auth.currentUser) return; 
+
+                    if (initialAuthToken) {
+                        await signInWithCustomToken(auth, initialAuthToken);
+                        console.log("Signed in with custom token.");
+                    } else {
+                        // Sign in anonymously to ensure we always have a userId
+                        await signInAnonymously(auth);
+                        console.log("Signed in anonymously.");
+                    }
+                }
+
+                // Use onAuthStateChanged to manage UI based on authentication status
+                onAuthStateChanged(auth, async (user) => {
+                    isAuthReady = true; // Auth check has completed
+                    
+                    if (!user) {
+                        // If no user is logged in, sign one in first
+                        await handleSignIn();
+                        user = auth.currentUser; // Get the newly signed-in user
+                    }
+                    
+                    if (user) {
+                        userId = user.uid;
+                        console.log("Authenticated as:", userId);
+                        // Ensure listenForEntryCard is only called when we have a user
+                        listenForEntryCard();
+                    }
+                });
+
+            } catch (error) {
+                console.error("Firebase Initialization Error:", error);
+                loadingState.innerHTML = `<p class="text-red-600">एप्लिकेशन को आरंभ करने में त्रुटि। कृपया कॉन्फ़िगरेशन जांचें।</p><p class="text-sm text-gray-500">विवरण: ${error.message}</p>`;
+            }
+        }
+
+        /**
+         * Starts a new registration session by signing out the current user
+         * and immediately signing in a new one, then rendering the form.
+         */
+        async function handleNewRegistration() {
+            // 1. Visually reset to loading state
+            cardSection.classList.add('hidden');
+            loadingState.classList.remove('hidden');
+            
+            // 2. Clear previous form data and errors for a clean start
+            form.reset();
+            hideError();
+
+            try {
+                // 3. Sign out the current user to clear the session ID
+                if (auth.currentUser) {
+                    await signOut(auth);
+                    console.log("Current user signed out.");
+                }
+
+                // 4. Immediately sign in a new anonymous user
+                const userCredential = await signInAnonymously(auth);
+                userId = userCredential.user.uid;
+                console.log("New anonymous user signed in:", userId);
+
+                // 5. Explicitly render the form now that we have a fresh user ID
+                renderForm();
+
+            } catch (error) {
+                console.error("Error creating new session:", error);
+                loadingState.innerHTML = `<p class="text-red-600">नया सत्र शुरू करने में त्रुटि: ${error.message}</p>`;
+            }
+        }
+        window.handleNewRegistration = handleNewRegistration; // Make it globally accessible
+
+        /**
+         * Listens to the Firestore document for the user's registration data (the entry card).
+         */
+        function listenForEntryCard() {
+            // CRITICAL GUARD: Do not proceed without database and user ID.
+            if (!db || !userId) {
+                console.warn("Attempted to listenForEntryCard before authentication was ready.");
+                return;
+            }
+
+            // Path: /artifacts/{appId}/users/{userId}/registrations/entryCard (Private Data)
+            const cardPath = `artifacts/${appId}/users/${userId}/registrations/entryCard`;
+            const cardRef = doc(db, cardPath);
+
+            // This listener ensures we show the card if it exists, otherwise the form.
+            onSnapshot(cardRef, (docSnapshot) => {
+                if (docSnapshot.exists()) {
+                    // Data found: Show the Entry Card
+                    const data = docSnapshot.data();
+                    console.log("Entry data retrieved:", data);
+                    renderEntryCard(data);
+                } else {
+                    // No data found: Show the registration form
+                    console.log("No existing registration found. Showing form.");
+                    renderForm();
+                }
+            }, (error) => {
+                // Log the error for debugging
+                console.error("Error listening to card document:", error.message);
+                
+                // If permissions are denied, we still try to render the form, 
+                // but inform the user of the security issue.
+                if (error.code === 'permission-denied') {
+                    console.error("Permission denied to read Firestore data. Check security rules.");
+                    showError("सुरक्षा त्रुटि के कारण मौजूदा पंजीकरण प्राप्त नहीं हो सका। कृपया पुनः पंजीकरण का प्रयास करें।");
+                }
+                renderForm();
+            });
+        }
+
+        /**
+         * Handles the form submission to save data to Firestore.
+         * Data is saved to BOTH private and public collections for Excel export.
+         * @param {Event} e - The form submit event.
+         */
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+            
+            if (!userId) {
+                showError("प्रमाणीकरण पूरा नहीं हुआ है। कृपया प्रतीक्षा करें और पुनः प्रयास करें।");
+                return;
+            }
+
+            submitButton.disabled = true;
+            submitButton.textContent = 'प्रस्तुत हो रहा है...'; // Submitting...
+            hideError();
+
+            try {
+                const formData = new FormData(form);
+                const timestamp = new Date().toISOString();
+                const data = {
+                    name: formData.get('name').trim(),
+                    contact: formData.get('contact').trim(),
+                    address: formData.get('address').trim(),
+                    timestamp: timestamp,
+                    userId: userId, 
+                };
+                
+                if (!data.name || !data.contact || !data.address) {
+                    throw new Error("सभी फ़ील्ड आवश्यक हैं।"); // All fields are required.
+                }
+
+                // 1. Save card privately (for retrieval when user scans QR code again)
+                // Path: /artifacts/{appId}/users/{userId}/registrations/entryCard
+                const privateCardPath = `artifacts/${appId}/users/${userId}/registrations/entryCard`;
+                await setDoc(doc(db, privateCardPath), data);
+                
+                // 2. Save data publicly (for organizer export to Excel/CSV)
+                // Path: /artifacts/{appId}/public/data/attendees/{unique_doc_id}
+                const publicAttendeeCollection = collection(db, `artifacts/${appId}/public/data/attendees`);
+                // Use addDoc to automatically generate a unique ID for each new entry
+                await addDoc(publicAttendeeCollection, data);
+
+                console.log("Registration saved successfully to private and public collections!");
+                renderEntryCard(data); // Render card immediately
+                
+
+            } catch (error) {
+                console.error("Registration failed:", error);
+                showError(`पंजीकरण विफल रहा: ${error.message}`); // Registration failed
+            } finally {
+                submitButton.disabled = false;
+                submitButton.textContent = 'प्रवेश कार्ड बनाएँ'; // Generate Entry Card
+            }
+        }
+
+        /**
+         * Downloads the entry card as a PNG image using html2canvas.
+         */
+        function downloadCard() {
+            const cardElement = document.getElementById('entry-card');
+            const cardName = document.getElementById('card-name').textContent || 'अतिथि'; // Guest
+
+            if (typeof html2canvas === 'undefined') {
+                console.error("html2canvas लाइब्रेरी लोड नहीं हुई है।"); // html2canvas library is not loaded.
+                return;
+            }
+
+            html2canvas(cardElement, {
+                scale: 2, // Increase scale for better resolution
+                logging: false,
+                useCORS: true 
+            }).then(canvas => {
+                const image = canvas.toDataURL('image/png');
+
+                const link = document.createElement('a');
+                link.href = image;
+                link.download = `${cardName.replace(/\s+/g, '_')}_EventPass.png`;
+                
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                console.log("एंट्री कार्ड डाउनलोड शुरू हो गया।"); // Entry card download triggered.
+            }).catch(error => {
+                console.error("कार्ड बनाने या डाउनलोड करने में त्रुटि:", error); // Error generating or downloading card
+                // Custom error message for user
+                document.getElementById('download-error')?.remove(); 
+                
+                appContainer.insertAdjacentHTML('afterbegin', `
+                    <div id="download-error" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                        <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm text-center">
+                            <p class="text-red-600 font-semibold mb-3">डाउनलोड विफल रहा</p> <!-- Download Failed --><p class="text-sm text-gray-700">कार्ड छवि उत्पन्न नहीं हो सकी। कृपया पुनः प्रयास करें।</p> <!-- Could not generate the card image. Please try again. --><button onclick="document.getElementById('download-error').remove()" class="mt-4 bg-red-500 text-white py-2 px-4 rounded-lg">बंद करें</button> <!-- Close --></div>
+                    </div>
+                `);
+            });
+        }
+        window.downloadCard = downloadCard; // Make it globally accessible to the onclick event
+
+        // --- Utility Functions ---
+
+        /**
+         * Formats ISO 8601 string to a readable date and time.
+         * @param {string} isoString - The ISO 8601 date string.
+         */
+        function formatTimestamp(isoString) {
+            try {
+                return new Date(isoString).toLocaleString('en-US', { /* Changed locale to English (US) */
+                    dateStyle: 'medium',
+                    timeStyle: 'short'
+                });
+            } catch {
+                return "Date N/A"; // Changed fallback to English for consistency
+            }
+        }
+
+
+        // --- Rendering Functions ---
+
+        function renderForm() {
+            loadingState.classList.add('hidden');
+            cardSection.classList.add('hidden');
+            formSection.classList.remove('hidden');
+        }
+
+        function renderEntryCard(data) {
+            document.getElementById('card-name').textContent = data.name;
+            document.getElementById('card-contact').textContent = data.contact;
+            document.getElementById('card-address').textContent = data.address;
+            document.getElementById('card-user-id').textContent = data.userId; 
+            document.getElementById('card-timestamp').textContent = formatTimestamp(data.timestamp);
+            
+            loadingState.classList.add('hidden');
+            formSection.classList.add('hidden');
+            cardSection.classList.remove('hidden');
+        }
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.classList.remove('hidden');
+        }
+
+        function hideError() {
+            errorMessage.classList.add('hidden');
+        }
+
+        // --- Event Listeners and Initial Call ---
+        
+        form.addEventListener('submit', handleFormSubmit);
+
+        // Start the application lifecycle
+        initializeAppAndAuth();
+
+    </script>
+</body>
+</html>
