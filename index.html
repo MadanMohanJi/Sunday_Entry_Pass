@@ -115,7 +115,8 @@
         setLogLevel('Debug');
 
         // --- EXPLICIT FIREBASE CONFIGURATION (Provided by User) ---
-        const explicitFirebaseConfig = {
+        // We use a simple constant name here to avoid confusion with environment variables
+        const PROJECT_FIREBASE_CONFIG = {
             apiKey: "AIzaSyBOc6EeIc59S6COb80NJfYyl3GdRiI2H6k",
             authDomain: "entrycard-1a28a.firebaseapp.com",
             projectId: "entrycard-1a28a",
@@ -128,8 +129,9 @@
 
         // Global Variables
         // Use the environment's app ID if available, otherwise use the projectId from the config.
-        const appId = typeof __app_id !== 'undefined' ? __app_id : explicitFirebaseConfig.projectId;
-        const firebaseConfig = explicitFirebaseConfig; 
+        const appId = typeof __app_id !== 'undefined' ? __app_id : PROJECT_FIREBASE_CONFIG.projectId;
+        // CORRECTED: Use the explicitly defined config object for initialization
+        const firebaseConfig = PROJECT_FIREBASE_CONFIG; 
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
         // Firebase Service Instances
@@ -159,19 +161,22 @@
                     throw new Error("Firebase configuration not available.");
                 }
 
+                // Initialize Firebase App FIRST
                 app = initializeApp(firebaseConfig);
                 db = getFirestore(app);
                 auth = getAuth(app);
                 
                 // Function to handle sign-in logic (called by onAuthStateChanged)
                 async function handleSignIn() {
-                    if (auth.currentUser) return; 
+                    // Check if Authentication is properly initialized before calling signInAnonymously
+                    if (!auth || auth.currentUser) return; 
 
                     if (initialAuthToken) {
                         await signInWithCustomToken(auth, initialAuthToken);
                         console.log("Signed in with custom token.");
                     } else {
                         // Sign in anonymously to ensure we always have a userId
+                        // This is the line that throws the error if the config is bad or auth is disabled.
                         await signInAnonymously(auth);
                         console.log("Signed in anonymously.");
                     }
@@ -194,8 +199,8 @@
                         listenForEntryCard();
                     } else {
                         // Fallback if sign-in failed even after attempt
-                        console.error("Authentication failed: No user object received.");
-                        loadingState.innerHTML = `<p class="text-red-600">प्रमाणीकरण विफल रहा। कृपया ब्राउज़र कंसोल जांचें।</p>`;
+                        console.error("Authentication failed: No user object received. Check Firebase project Auth setup.");
+                        loadingState.innerHTML = `<p class="text-red-600">प्रमाणीकरण विफल रहा। कृपया Firebase Console में Authentication सर्विस सक्षम करें।</p>`;
                     }
                 });
 
