@@ -3,186 +3,195 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>इस्कॉन इवेंट पास</title>
+    <title>ISKCON Event Pass</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@100..900&display=swap');
-        body { font-family: 'Noto Sans Devanagari', 'Inter', sans-serif; background-color: #f3f4f6; }
-        .glass-effect { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700&display=swap');
+        
+        body { font-family: 'Noto Sans Devanagari', 'Inter', sans-serif; background-color: #f9fafb; }
+        
+        /* Ticket Pattern - Subtle Dots */
+        .ticket-pattern {
+            background-color: #ffffff;
+            background-image: radial-gradient(#fb923c 0.5px, transparent 0.5px), radial-gradient(#fb923c 0.5px, #ffffff 0.5px);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+        }
+        .dashed-line { border-top: 2px dashed #d1d5db; }
     </style>
 </head>
-<body class="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-b from-blue-50 to-indigo-100">
+<body class="min-h-screen flex flex-col items-center justify-center p-4">
 
-    <div id="app-container" class="w-full max-w-lg glass-effect shadow-2xl rounded-2xl p-6 md:p-8 border border-white">
-        <div class="text-center mb-6">
-            <h1 class="text-3xl font-bold text-indigo-800">इस्कॉन उज्जैन</h1>
-            <p class="text-sm text-gray-500">सन्डे फीस्ट / इवेंट पास</p>
-        </div>
-
-        <div id="loading-state" class="text-center py-10">
-            <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600 mx-auto mb-3"></div>
-            <p class="text-gray-600 animate-pulse">कृपया प्रतीक्षा करें...</p>
-        </div>
-
-        <div id="closed-section" class="hidden text-center py-8">
-            <div class="bg-red-50 text-red-700 px-4 py-3 rounded-lg border border-red-200">
-                <strong class="font-bold block text-lg">⚠️ पंजीकरण बंद है</strong>
-                <span class="text-sm">अभी नई प्रविष्टियाँ स्वीकार नहीं की जा रही हैं।</span>
+    <div id="app-container" class="w-full max-w-md bg-white shadow-xl rounded-2xl overflow-hidden border border-gray-100">
+        
+        <div class="h-2 bg-gradient-to-r from-orange-400 to-red-500"></div>
+        
+        <div class="p-6 md:p-8">
+            <div class="text-center mb-8">
+                <h1 class="text-2xl font-bold text-gray-800 tracking-tight">इस्कॉन उज्जैन</h1>
+                <p class="text-xs font-medium text-orange-600 uppercase tracking-widest mt-1">Guest Registration</p>
             </div>
-            <button onclick="renderAdminLogin()" class="mt-6 text-sm text-gray-500 underline hover:text-indigo-600">Admin Login</button>
-        </div>
 
-        <div id="family-section" class="hidden">
-            <div class="flex justify-between items-end mb-3">
-                <h2 class="text-lg font-semibold text-gray-800">सहेजे गए सदस्य (Saved Family)</h2>
-                <button onclick="clearFamilyData()" class="text-xs text-red-500 hover:text-red-700">Clear All</button>
+            <div id="loading-state" class="text-center py-8">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto mb-2"></div>
+                <p class="text-sm text-gray-500">Loading...</p>
             </div>
-            
-            <div id="family-list" class="space-y-3 mb-4 max-h-60 overflow-y-auto">
-                </div>
-            
-            <button onclick="showNewForm()" class="w-full py-3 border-2 border-dashed border-indigo-300 text-indigo-600 rounded-xl font-semibold hover:bg-indigo-50 transition flex items-center justify-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
-                किसी नए व्यक्ति को जोड़ें
-            </button>
-            <div class="text-center mt-4"><button onclick="renderAdminLogin()" class="text-xs text-gray-400">Admin</button></div>
-        </div>
 
-        <div id="form-section" class="hidden">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-semibold text-gray-800">नया पंजीकरण</h2>
-                <button onclick="renderFamilyScreen()" id="back-to-family-btn" class="text-sm text-indigo-600 hidden">← वापस (Back)</button>
+            <div id="closed-section" class="hidden text-center py-6 bg-red-50 rounded-xl border border-red-100">
+                <p class="text-red-600 font-bold">⛔ पंजीकरण बंद है</p>
+                <button onclick="renderAdminLogin()" class="mt-4 text-xs text-gray-500 underline">Admin Login</button>
             </div>
-            
-            <form id="registration-form" class="space-y-3" autocomplete="off">
-                <div>
-                    <label class="block text-xs font-bold text-gray-600 uppercase mb-1">पूरा नाम (Full Name)</label>
-                    <input type="text" id="name" required placeholder="अपना नाम लिखें" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+
+            <div id="family-section" class="hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-sm font-bold text-gray-700 uppercase">Saved Members</h2>
+                    <button onclick="clearFamilyData()" class="text-xs text-red-500 hover:text-red-700 font-medium">Clear All</button>
                 </div>
                 
-                <div>
-                    <label class="block text-xs font-bold text-gray-600 uppercase mb-1">मोबाइल नंबर (Mobile)</label>
-                    <input type="tel" id="contact" required placeholder="10 अंकों का मोबाइल नंबर" maxlength="10" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
-                </div>
+                <div id="family-list" class="space-y-3 mb-6">
+                    </div>
+                
+                <button onclick="showNewForm()" class="w-full py-3 bg-gray-50 border border-gray-200 text-gray-600 rounded-xl text-sm font-semibold hover:bg-gray-100 transition flex items-center justify-center gap-2">
+                    <span>+</span> नया सदस्य जोड़ें (Add New)
+                </button>
+                <div class="text-center mt-6"><button onclick="renderAdminLogin()" class="text-xs text-gray-300 hover:text-gray-500">Admin Panel</button></div>
+            </div>
 
-                <div>
-                    <label class="block text-xs font-bold text-gray-600 uppercase mb-1">घर का पता (Address)</label>
-                    <input type="text" id="home_address" required placeholder="अपना पता लिखें" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
-                </div>
-
-                <div>
-                    <label class="block text-xs font-bold text-gray-600 uppercase mb-1">कनेक्टेड भक्त (Devotee Name)</label>
-                    <input type="text" id="devotee" required placeholder="किस भक्त से जुड़े हैं?" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+            <div id="form-section" class="hidden">
+                <div class="flex items-center mb-6">
+                    <button onclick="renderFamilyScreen()" id="back-to-family-btn" class="mr-3 text-gray-400 hover:text-gray-800 hidden">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+                    </button>
+                    <h2 class="text-lg font-bold text-gray-800">नया पास बनाएँ</h2>
                 </div>
                 
-                <button type="submit" id="submit-button" class="w-full bg-indigo-600 text-white py-3.5 rounded-xl font-bold shadow-lg hover:bg-indigo-700 transform active:scale-95 transition-all mt-2">
-                    🎫 पास जनरेट करें
-                </button>
-            </form>
-            <p id="error-message" class="text-red-500 text-center mt-3 text-sm hidden"></p>
-        </div>
+                <form id="registration-form" class="space-y-4" autocomplete="off">
+                    <div class="relative">
+                        <input type="text" id="name" required class="peer w-full border-b-2 border-gray-200 py-2 placeholder-transparent focus:border-orange-500 focus:outline-none transition-colors text-gray-800 bg-transparent" placeholder="Name">
+                        <label for="name" class="absolute left-0 -top-3.5 text-xs text-gray-500 transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-placeholder-shown:top-2 peer-focus:-top-3.5 peer-focus:text-xs peer-focus:text-orange-500">पूरा नाम (Full Name)</label>
+                    </div>
 
-        <div id="card-section" class="hidden">
-            <h2 class="text-xl font-semibold text-gray-800 mb-4 text-center">✅ आपका पास तैयार है</h2>
-            <div class="flex justify-center mb-6">
-                <div id="entry-card" class="w-full bg-gradient-to-br from-indigo-700 to-purple-800 text-white p-6 rounded-2xl shadow-xl relative overflow-hidden">
-                    <div class="absolute -top-10 -right-10 w-32 h-32 bg-white opacity-10 rounded-full blur-2xl"></div>
-                    <div class="absolute -bottom-10 -left-10 w-32 h-32 bg-purple-500 opacity-20 rounded-full blur-2xl"></div>
+                    <div class="relative mt-4">
+                        <input type="tel" id="contact" required maxlength="10" class="peer w-full border-b-2 border-gray-200 py-2 placeholder-transparent focus:border-orange-500 focus:outline-none transition-colors text-gray-800 bg-transparent" placeholder="Contact">
+                        <label for="contact" class="absolute left-0 -top-3.5 text-xs text-gray-500 transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-placeholder-shown:top-2 peer-focus:-top-3.5 peer-focus:text-xs peer-focus:text-orange-500">मोबाइल नंबर (Mobile)</label>
+                    </div>
 
-                    <div class="border-b border-white/20 pb-3 mb-3 relative z-10">
-                        <h3 class="text-xl font-bold tracking-wide">इस्कॉन उज्जैन</h3>
-                        <p class="text-xs text-indigo-200 uppercase tracking-wider mt-1">Event Entry Pass</p>
+                    <div class="relative mt-4">
+                        <input type="text" id="home_address" required class="peer w-full border-b-2 border-gray-200 py-2 placeholder-transparent focus:border-orange-500 focus:outline-none transition-colors text-gray-800 bg-transparent" placeholder="Address">
+                        <label for="home_address" class="absolute left-0 -top-3.5 text-xs text-gray-500 transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-placeholder-shown:top-2 peer-focus:-top-3.5 peer-focus:text-xs peer-focus:text-orange-500">घर का पता (Address)</label>
+                    </div>
+
+                    <div class="relative mt-4">
+                        <input type="text" id="devotee" required class="peer w-full border-b-2 border-gray-200 py-2 placeholder-transparent focus:border-orange-500 focus:outline-none transition-colors text-gray-800 bg-transparent" placeholder="Devotee">
+                        <label for="devotee" class="absolute left-0 -top-3.5 text-xs text-gray-500 transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-placeholder-shown:top-2 peer-focus:-top-3.5 peer-focus:text-xs peer-focus:text-orange-500">कनेक्टेड भक्त (Devotee Name)</label>
                     </div>
                     
-                    <div class="space-y-1 relative z-10">
-                        <p class="text-xs text-indigo-200">Visitor Name</p>
-                        <p id="card-name" class="text-2xl font-bold text-white truncate"></p>
-                    </div>
+                    <button type="submit" id="submit-button" class="w-full mt-6 bg-gray-900 text-white py-3 rounded-lg font-bold shadow-lg hover:bg-black transition-transform active:scale-95">
+                        Get Entry Pass →
+                    </button>
+                </form>
+            </div>
 
-                    <div class="mt-2 relative z-10">
-                         <p class="text-[10px] text-indigo-200 uppercase">Address</p>
-                         <p id="card-home-address" class="text-xs font-medium truncate"></p>
+            <div id="card-section" class="hidden">
+                <div class="text-center mb-4">
+                    <div class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold inline-block mb-2">✓ Registration Successful</div>
+                    <h2 class="text-lg font-bold text-gray-800">आपका पास तैयार है</h2>
+                </div>
+
+                <div class="flex justify-center mb-6">
+                    <div id="entry-card" class="w-full bg-white border-2 border-orange-200 rounded-xl overflow-hidden relative shadow-sm ticket-pattern">
+                        <div class="bg-orange-50 border-b border-orange-100 p-4 text-center">
+                            <h3 class="text-xl font-bold text-gray-900">ISKCON UJJAIN</h3>
+                            <p class="text-[10px] text-gray-500 uppercase tracking-widest mt-1">Official Entry Pass</p>
+                        </div>
+
+                        <div class="p-5 space-y-4">
+                            <div>
+                                <p class="text-[10px] uppercase text-gray-400 font-bold">Visitor Name</p>
+                                <p id="card-name" class="text-2xl font-bold text-gray-900 leading-tight"></p>
+                            </div>
+
+                            <div class="dashed-line"></div>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <p class="text-[10px] uppercase text-gray-400 font-bold">Mobile</p>
+                                    <p id="card-contact" class="text-sm font-semibold text-gray-800"></p>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] uppercase text-gray-400 font-bold">Devotee Link</p>
+                                    <p id="card-devotee" class="text-sm font-semibold text-gray-800 truncate"></p>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <p class="text-[10px] uppercase text-gray-400 font-bold">Home Address</p>
+                                <p id="card-home-address" class="text-xs font-medium text-gray-600 truncate"></p>
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-50 p-3 flex justify-between items-center border-t border-gray-100">
+                            <p id="card-timestamp" class="text-[10px] font-mono text-gray-500"></p>
+                            <p id="card-user-id" class="text-[10px] font-mono text-gray-400 uppercase"></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="space-y-3">
+                    <button onclick="downloadCard()" class="w-full bg-orange-600 text-white py-3 rounded-lg font-bold shadow hover:bg-orange-700 transition">
+                        📥 Download Ticket
+                    </button>
+                    <button onclick="renderFamilyScreen()" class="w-full text-gray-500 text-sm font-medium hover:text-gray-900 py-2">
+                        + Add Another Person
+                    </button>
+                </div>
+            </div>
+
+            <div id="admin-dashboard-section" class="hidden">
+                <div class="flex justify-between items-center mb-6 border-b pb-4">
+                    <h2 class="text-lg font-bold text-gray-800">Admin Control</h2>
+                    <button onclick="handleSignOut()" class="text-xs text-red-500 font-bold hover:underline">LOGOUT</button>
+                </div>
+                
+                <div class="bg-gray-50 rounded-lg p-4 mb-4 border border-gray-200">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="text-sm font-bold text-gray-700">Form Status</span>
+                        <button id="reg-toggle-btn" onclick="toggleRegistrationStatus()" class="px-3 py-1 rounded text-xs font-bold transition"></button>
                     </div>
                     
-                    <div class="grid grid-cols-2 gap-4 mt-2 pt-2 border-t border-white/20 relative z-10">
-                        <div>
-                            <p class="text-[10px] text-indigo-200 uppercase">Contact</p>
-                            <p id="card-contact" class="text-sm font-medium"></p>
-                        </div>
-                        <div>
-                            <p class="text-[10px] text-indigo-200 uppercase">Connected To</p>
-                            <p id="card-devotee" class="text-sm font-medium truncate"></p>
-                        </div>
+                    <div class="flex gap-2">
+                        <button onclick="exportToCSV()" class="flex-1 bg-white border border-gray-300 text-gray-700 py-2 rounded text-xs font-bold shadow-sm hover:bg-gray-50">
+                            Excel Export
+                        </button>
+                        <button onclick="clearAllData()" class="flex-1 bg-white border border-red-200 text-red-600 py-2 rounded text-xs font-bold shadow-sm hover:bg-red-50">
+                            Clear Data
+                        </button>
                     </div>
-                    
-                    <div class="mt-4 pt-2 border-t border-white/10 flex justify-between items-end relative z-10">
-                        <div>
-                            <p class="text-[10px] text-indigo-200">Date & Time</p>
-                            <p id="card-timestamp" class="text-xs font-mono"></p>
-                        </div>
-                        <div class="text-right">
-                             <p class="text-[10px] text-indigo-200">User ID</p>
-                             <p id="card-user-id" class="text-[10px] opacity-70 w-16 truncate text-right"></p>
-                        </div>
+                </div>
+
+                <div class="border border-gray-200 rounded-lg overflow-hidden">
+                    <div class="max-h-64 overflow-y-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead class="bg-gray-100 sticky top-0 text-gray-500 text-xs uppercase">
+                                <tr><th class="p-3">Name</th><th class="p-3">Phone</th><th class="p-3">Devotee</th></tr>
+                            </thead>
+                            <tbody id="attendee-list" class="divide-y divide-gray-100 bg-white"></tbody>
+                        </table>
                     </div>
                 </div>
             </div>
-            
-            <div class="space-y-3">
-                <button onclick="downloadCard()" class="w-full bg-green-600 text-white py-3 rounded-xl font-bold shadow hover:bg-green-700 flex items-center justify-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                    Download Image
-                </button>
-                <button onclick="renderFamilyScreen()" class="w-full bg-white text-indigo-600 border border-indigo-200 py-3 rounded-xl font-semibold hover:bg-gray-50">
-                    + दूसरे सदस्य का पास बनाएँ
-                </button>
-            </div>
-        </div>
 
-        <div id="admin-dashboard-section" class="hidden">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold text-gray-800">Admin Panel</h2>
-                <button onclick="handleSignOut()" class="text-xs bg-red-100 text-red-600 px-3 py-1 rounded hover:bg-red-200">Logout</button>
-            </div>
-            
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-4">
-                <div class="flex items-center justify-between mb-4">
-                    <span class="text-sm font-medium text-gray-600">Registration Status:</span>
-                    <label class="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" id="reg-toggle" class="sr-only peer" onchange="toggleRegistrationStatus()">
-                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-green-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
-                    </label>
-                </div>
-                <div class="grid grid-cols-2 gap-2">
-                    <button onclick="exportToCSV()" class="bg-indigo-50 text-indigo-700 py-2 rounded-lg text-xs font-semibold hover:bg-indigo-100 border border-indigo-200">Download Excel</button>
-                    <button onclick="clearAllData()" class="bg-red-50 text-red-700 py-2 rounded-lg text-xs font-semibold hover:bg-red-100 border border-red-200">Clear Data</button>
-                </div>
+            <div id="admin-login-section" class="hidden text-center">
+                <h2 class="text-xl font-bold text-gray-800 mb-6">Admin Access</h2>
+                <form id="admin-login-form" class="space-y-4">
+                    <input type="email" id="admin-email" required placeholder="admin@iskcon.com" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-gray-400">
+                    <input type="password" id="admin-password" required placeholder="Password" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-gray-400">
+                    <button type="submit" class="w-full bg-black text-white py-3 rounded-lg font-bold">Login</button>
+                </form>
+                <button onclick="renderForm()" class="mt-6 text-sm text-gray-400 hover:text-gray-600">Cancel</button>
             </div>
 
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                <div class="max-h-96 overflow-y-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead class="bg-gray-50 sticky top-0"><tr>
-                            <th class="p-3 text-xs font-bold text-gray-500">Name</th>
-                            <th class="p-3 text-xs font-bold text-gray-500">Phone</th>
-                            <th class="p-3 text-xs font-bold text-gray-500">Address</th>
-                            <th class="p-3 text-xs font-bold text-gray-500">Devotee</th>
-                        </tr></thead>
-                        <tbody id="attendee-list" class="divide-y divide-gray-100 text-sm text-gray-700"></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <div id="admin-login-section" class="hidden">
-            <h2 class="text-2xl font-bold text-center mb-6 text-gray-800">Admin Access</h2>
-            <form id="admin-login-form" class="space-y-4">
-                <input type="email" id="admin-email" required placeholder="Email" class="w-full p-3 border rounded-lg">
-                <input type="password" id="admin-password" required placeholder="Password" class="w-full p-3 border rounded-lg">
-                <button type="submit" class="w-full bg-gray-800 text-white py-3 rounded-lg font-bold hover:bg-gray-900">Login</button>
-            </form>
-            <div class="text-center mt-4"><button onclick="renderForm()" class="text-sm text-gray-500">← Back to Home</button></div>
         </div>
     </div>
 
@@ -192,15 +201,17 @@
         import { getAuth, signInAnonymously, onAuthStateChanged, signOut, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, onSnapshot, collection, addDoc, getDocs, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         
-        // CONFIG
+        // --- UPDATED CONFIGURATION (entrycard-1a28a) ---
         const firebaseConfig = {
-            apiKey: "AIzaSyDlyRBUS_Dg2qXuSVHWjRlnE2ZjTxPEXbo",
-            authDomain: "prasadam-coupon-d1351.firebaseapp.com",
-            projectId: "prasadam-coupon-d1351",
-            storageBucket: "prasadam-coupon-d1351.firebasestorage.app",
-            messagingSenderId: "475680540304",
-            appId: "1:475680540304:web:d9b4836d7ea1a709f2fa15"
+            apiKey: "AIzaSyBOc6EeIc59S6COb80NJfYyl3GdRiI2H6k",
+            authDomain: "entrycard-1a28a.firebaseapp.com",
+            projectId: "entrycard-1a28a",
+            storageBucket: "entrycard-1a28a.firebasestorage.app",
+            messagingSenderId: "571342230056",
+            appId: "1:571342230056:web:de9f4c19cd820cee6cdb1d",
+            measurementId: "G-MQWXKCQ85H"
         };
+        
         const ADMIN_EMAILS = ["shivesh211204@gmail.com", "iskcon.sunday.feast@gmail.com"];
 
         // APP STATE
@@ -215,30 +226,28 @@
             login: document.getElementById('admin-login-section')
         };
 
-        // --- FAMILY PROFILE LOGIC (Browser Memory) ---
+        // --- FAMILY PROFILE LOGIC ---
         function getFamilyProfiles() {
-            try { return JSON.parse(localStorage.getItem('iskcon_family_list_v2') || '[]'); } 
+            try { return JSON.parse(localStorage.getItem('iskcon_family_list_v4') || '[]'); } 
             catch { return []; }
         }
 
         function saveProfileToMemory(name, contact, homeAddress, devotee) {
             let profiles = getFamilyProfiles();
-            // Remove duplicates (same name) to update details
             profiles = profiles.filter(p => p.name.toLowerCase() !== name.trim().toLowerCase());
-            // Add new profile with ALL 4 fields
             profiles.unshift({ 
                 name: name.trim(), 
                 contact: contact.trim(), 
                 homeAddress: homeAddress.trim(),
                 devotee: devotee.trim()
             });
-            if(profiles.length > 8) profiles.pop(); // Keep last 8 people
-            localStorage.setItem('iskcon_family_list_v2', JSON.stringify(profiles));
+            if(profiles.length > 8) profiles.pop();
+            localStorage.setItem('iskcon_family_list_v4', JSON.stringify(profiles));
         }
         
         window.clearFamilyData = function() {
-            if(confirm("Saved family list delete karni hai?")) {
-                localStorage.removeItem('iskcon_family_list_v2');
+            if(confirm("Delete all saved members?")) {
+                localStorage.removeItem('iskcon_family_list_v4');
                 renderFamilyScreen();
             }
         };
@@ -256,17 +265,16 @@
             } else {
                 const listEl = document.getElementById('family-list');
                 listEl.innerHTML = profiles.map((p, index) => `
-                    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex justify-between items-center">
+                    <div onclick="quickGenerate('${index}')" class="bg-gray-50 p-4 rounded-lg border border-gray-100 flex justify-between items-center cursor-pointer hover:bg-orange-50 hover:border-orange-200 transition group">
                         <div class="overflow-hidden">
-                            <p class="font-bold text-gray-800 truncate">${p.name}</p>
-                            <p class="text-xs text-gray-500">${p.homeAddress}</p>
+                            <p class="font-bold text-gray-800 group-hover:text-orange-700">${p.name}</p>
+                            <p class="text-xs text-gray-500">${p.devotee}</p>
                         </div>
-                        <button onclick="quickGenerate('${index}')" class="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-indigo-700 shadow-sm shrink-0 ml-2">
-                            Get Pass
-                        </button>
+                        <div class="bg-white rounded-full p-2 shadow-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 group-hover:text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                        </div>
                     </div>
                 `).join('');
-                
                 views.family.classList.remove('hidden');
             }
         };
@@ -275,20 +283,17 @@
             hideAll();
             if(!isRegistrationOpen) { views.closed.classList.remove('hidden'); return; }
             
-            // Back button logic
             const profiles = getFamilyProfiles();
             document.getElementById('back-to-family-btn').classList.toggle('hidden', profiles.length === 0);
             
-            // Auto-fill common fields (Address, Devotee, Phone) from last used profile if available
             if(profiles.length > 0) {
                 document.getElementById('contact').value = profiles[0].contact;
                 document.getElementById('home_address').value = profiles[0].homeAddress;
                 document.getElementById('devotee').value = profiles[0].devotee;
-                document.getElementById('name').value = ""; // Clear name only
+                document.getElementById('name').value = "";
             } else {
                  document.getElementById('registration-form').reset();
             }
-            
             views.form.classList.remove('hidden');
         };
 
@@ -300,20 +305,18 @@
             const profiles = getFamilyProfiles();
             const p = profiles[index];
             if(!p) return;
-            // Generate using stored profile data
             await generateTicket(p.name, p.contact, p.homeAddress, p.devotee);
         };
 
         async function generateTicket(name, contact, homeAddress, devotee) {
-            if(!userId) { alert("Network Error. Reloading..."); window.location.reload(); return; }
+            if(!userId) { alert("Reloading..."); window.location.reload(); return; }
 
-            // 1. MOBILE VALIDATION
             if(!/^\d{10}$/.test(contact)) {
-                alert("❌ अमान्य मोबाइल नंबर!\nकृपया सही 10 अंकों का नंबर डालें।");
+                alert("Please enter valid 10 digit mobile number.");
                 return;
             }
             
-            const btn = document.querySelector('button:not(.hidden)');
+            const btn = document.querySelector('button:not(.hidden)'); // Find visible button
             const originalText = btn ? btn.innerText : "";
             if(btn) { btn.disabled = true; btn.innerText = "Processing..."; }
 
@@ -324,16 +327,14 @@
                 await setDoc(doc(db, `artifacts/${firebaseConfig.projectId}/users/${userId}/registrations/entryCard`), data);
                 await addDoc(collection(db, `artifacts/${firebaseConfig.projectId}/public/data/attendees`), data);
 
-                // Save ALL fields to memory
                 saveProfileToMemory(name, contact, homeAddress, devotee);
 
-                // Update Card UI
                 document.getElementById('card-name').textContent = name;
                 document.getElementById('card-contact').textContent = contact;
                 document.getElementById('card-home-address').textContent = homeAddress;
                 document.getElementById('card-devotee').textContent = devotee;
                 document.getElementById('card-timestamp').textContent = new Date(timestamp).toLocaleString('en-US', {dateStyle:'medium', timeStyle:'short'});
-                document.getElementById('card-user-id').textContent = userId;
+                document.getElementById('card-user-id').textContent = userId.substring(0,6);
 
                 hideAll();
                 views.card.classList.remove('hidden');
@@ -361,7 +362,7 @@
 
             onSnapshot(doc(db, `artifacts/${firebaseConfig.projectId}/config/settings`), (snap) => {
                 isRegistrationOpen = snap.exists() ? snap.data().isRegistrationOpen !== false : true;
-                if(!views.admin.classList.contains('hidden')) document.getElementById('reg-toggle').checked = isRegistrationOpen;
+                updateAdminToggleUI();
                 if(!isRegistrationOpen && views.admin.classList.contains('hidden')) renderFamilyScreen();
             });
 
@@ -380,18 +381,28 @@
         }
 
         // --- ADMIN UTILS ---
+        function updateAdminToggleUI() {
+            const btn = document.getElementById('reg-toggle-btn');
+            if(isRegistrationOpen) {
+                btn.innerText = "OPEN";
+                btn.className = "px-3 py-1 rounded text-xs font-bold bg-green-100 text-green-700 hover:bg-green-200";
+            } else {
+                btn.innerText = "CLOSED";
+                btn.className = "px-3 py-1 rounded text-xs font-bold bg-red-100 text-red-700 hover:bg-red-200";
+            }
+        }
+
         window.downloadCard = async function() {
             const c = document.getElementById('entry-card');
             const canvas = await html2canvas(c, { scale: 3, useCORS: true, backgroundColor:null });
             const link = document.createElement('a');
             link.href = canvas.toDataURL("image/png");
-            link.download = `ISKCON_Pass_${document.getElementById('card-name').textContent}.png`;
+            link.download = `ISKCON_Pass.png`;
             link.click();
         };
 
         window.toggleRegistrationStatus = async () => {
-            const v = document.getElementById('reg-toggle').checked;
-            await setDoc(doc(db, `artifacts/${firebaseConfig.projectId}/config/settings`), {isRegistrationOpen:v}, {merge:true});
+            await setDoc(doc(db, `artifacts/${firebaseConfig.projectId}/config/settings`), {isRegistrationOpen:!isRegistrationOpen}, {merge:true});
         };
 
         window.handleSignOut = async () => { await signOut(auth); window.location.reload(); };
@@ -404,7 +415,7 @@
 
         async function fetchAttendees() {
             const t = document.getElementById('attendee-list');
-            t.innerHTML = '<tr><td class="p-4 text-center" colspan="4">Loading data...</td></tr>';
+            t.innerHTML = '<tr><td class="p-4 text-center text-gray-400" colspan="4">Loading...</td></tr>';
             try {
                 const s = await getDocs(collection(db, `artifacts/${firebaseConfig.projectId}/public/data/attendees`));
                 const d = []; s.forEach(doc => d.push(doc.data()));
@@ -412,12 +423,11 @@
                 
                 t.innerHTML = d.map(r => `
                     <tr class="hover:bg-gray-50 border-b border-gray-100">
-                        <td class="p-3 font-medium">${r.name}</td>
-                        <td class="p-3">${r.contact}</td>
-                        <td class="p-3 text-xs text-gray-500">${r.homeAddress || '-'}</td>
-                        <td class="p-3 text-xs text-gray-500">${r.devotee || r.address || '-'}</td>
+                        <td class="p-3 font-medium text-gray-800">${r.name}</td>
+                        <td class="p-3 text-gray-600">${r.contact}</td>
+                        <td class="p-3 text-gray-600 truncate max-w-[100px]">${r.devotee || r.address || '-'}</td>
                     </tr>`).join('');
-            } catch(e) { t.innerHTML = 'Error loading.'; }
+            } catch(e) { t.innerHTML = '<tr><td class="p-4 text-center text-red-400">Error</td></tr>'; }
         }
 
         window.exportToCSV = async function() {
@@ -425,20 +435,17 @@
             let csv = "Name,Contact,Address,Devotee,Time\n";
             s.forEach(d => {
                 const r = d.data();
-                // Handle old data (where 'address' was devotee) vs new data
-                const actualDevotee = r.devotee || r.address || "";
-                const actualAddress = r.homeAddress || "";
-                csv += `"${r.name}","${r.contact}","${actualAddress}","${actualDevotee}","${r.timestamp}"\n`;
+                csv += `"${r.name}","${r.contact}","${r.homeAddress||''}","${r.devotee||r.address}","${r.timestamp}"\n`;
             });
             const b = new Blob([csv],{type:'text/csv'});
             const u = URL.createObjectURL(b);
-            const a = document.createElement('a'); a.href=u; a.download='ISKCON_List.csv'; a.click();
+            const a = document.createElement('a'); a.href=u; a.download='Data.csv'; a.click();
         }
 
         window.clearAllData = async function() {
             if(!confirm("Are you sure?")) return;
             const p = prompt("Enter Password:");
-            if(p !== "Radha@108") return alert("Wrong Password!");
+            if(p !== "Prabhupada@108") return alert("Wrong Password!");
             
             const b = writeBatch(db);
             const s = await getDocs(collection(db, `artifacts/${firebaseConfig.projectId}/public/data/attendees`));
