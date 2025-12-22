@@ -34,7 +34,11 @@
         </div>
 
         <div id="family-section" class="hidden">
-            <h2 class="text-lg font-semibold text-gray-800 mb-3">किसका पास बनाना है?</h2>
+            <div class="flex justify-between items-end mb-3">
+                <h2 class="text-lg font-semibold text-gray-800">सहेजे गए सदस्य (Saved Family)</h2>
+                <button onclick="clearFamilyData()" class="text-xs text-red-500 hover:text-red-700">Clear All</button>
+            </div>
+            
             <div id="family-list" class="space-y-3 mb-4 max-h-60 overflow-y-auto">
                 </div>
             
@@ -51,21 +55,28 @@
                 <button onclick="renderFamilyScreen()" id="back-to-family-btn" class="text-sm text-indigo-600 hidden">← वापस (Back)</button>
             </div>
             
-            <form id="registration-form" class="space-y-4">
+            <form id="registration-form" class="space-y-3" autocomplete="off">
                 <div>
-                    <label class="block text-xs font-bold text-gray-600 uppercase mb-1">पूरा नाम</label>
-                    <input type="text" id="name" name="name" required placeholder="Example: Rahul Sharma" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-gray-600 uppercase mb-1">मोबाइल नंबर</label>
-                    <input type="tel" id="contact" name="contact" required placeholder="9876543210" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-gray-600 uppercase mb-1">कनेक्टेड भक्त (Devotee Name)</label>
-                    <input type="text" id="address" name="address" required placeholder="Example: HG Prabhu Ji" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition">
+                    <label class="block text-xs font-bold text-gray-600 uppercase mb-1">पूरा नाम (Full Name)</label>
+                    <input type="text" id="name" required placeholder="अपना नाम लिखें" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
                 </div>
                 
-                <button type="submit" id="submit-button" class="w-full bg-indigo-600 text-white py-3.5 rounded-xl font-bold shadow-lg hover:bg-indigo-700 transform active:scale-95 transition-all">
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 uppercase mb-1">मोबाइल नंबर (Mobile)</label>
+                    <input type="tel" id="contact" required placeholder="10 अंकों का मोबाइल नंबर" maxlength="10" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 uppercase mb-1">घर का पता (Address)</label>
+                    <input type="text" id="home_address" required placeholder="अपना पता लिखें" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 uppercase mb-1">कनेक्टेड भक्त (Devotee Name)</label>
+                    <input type="text" id="devotee" required placeholder="किस भक्त से जुड़े हैं?" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                </div>
+                
+                <button type="submit" id="submit-button" class="w-full bg-indigo-600 text-white py-3.5 rounded-xl font-bold shadow-lg hover:bg-indigo-700 transform active:scale-95 transition-all mt-2">
                     🎫 पास जनरेट करें
                 </button>
             </form>
@@ -88,15 +99,20 @@
                         <p class="text-xs text-indigo-200">Visitor Name</p>
                         <p id="card-name" class="text-2xl font-bold text-white truncate"></p>
                     </div>
+
+                    <div class="mt-2 relative z-10">
+                         <p class="text-[10px] text-indigo-200 uppercase">Address</p>
+                         <p id="card-home-address" class="text-xs font-medium truncate"></p>
+                    </div>
                     
-                    <div class="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-white/20 relative z-10">
+                    <div class="grid grid-cols-2 gap-4 mt-2 pt-2 border-t border-white/20 relative z-10">
                         <div>
                             <p class="text-[10px] text-indigo-200 uppercase">Contact</p>
                             <p id="card-contact" class="text-sm font-medium"></p>
                         </div>
                         <div>
                             <p class="text-[10px] text-indigo-200 uppercase">Connected To</p>
-                            <p id="card-address" class="text-sm font-medium truncate"></p>
+                            <p id="card-devotee" class="text-sm font-medium truncate"></p>
                         </div>
                     </div>
                     
@@ -135,7 +151,7 @@
                     <span class="text-sm font-medium text-gray-600">Registration Status:</span>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" id="reg-toggle" class="sr-only peer" onchange="toggleRegistrationStatus()">
-                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-green-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
                     </label>
                 </div>
                 <div class="grid grid-cols-2 gap-2">
@@ -147,7 +163,12 @@
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 <div class="max-h-96 overflow-y-auto">
                     <table class="w-full text-left border-collapse">
-                        <thead class="bg-gray-50 sticky top-0"><tr><th class="p-3 text-xs font-bold text-gray-500">Name</th><th class="p-3 text-xs font-bold text-gray-500">Contact</th><th class="p-3 text-xs font-bold text-gray-500">Date</th></tr></thead>
+                        <thead class="bg-gray-50 sticky top-0"><tr>
+                            <th class="p-3 text-xs font-bold text-gray-500">Name</th>
+                            <th class="p-3 text-xs font-bold text-gray-500">Phone</th>
+                            <th class="p-3 text-xs font-bold text-gray-500">Address</th>
+                            <th class="p-3 text-xs font-bold text-gray-500">Devotee</th>
+                        </tr></thead>
                         <tbody id="attendee-list" class="divide-y divide-gray-100 text-sm text-gray-700"></tbody>
                     </table>
                 </div>
@@ -196,20 +217,31 @@
 
         // --- FAMILY PROFILE LOGIC (Browser Memory) ---
         function getFamilyProfiles() {
-            try { return JSON.parse(localStorage.getItem('iskcon_family_list') || '[]'); } 
+            try { return JSON.parse(localStorage.getItem('iskcon_family_list_v2') || '[]'); } 
             catch { return []; }
         }
 
-        function saveProfileToMemory(name, contact, address) {
+        function saveProfileToMemory(name, contact, homeAddress, devotee) {
             let profiles = getFamilyProfiles();
-            // Remove duplicates (same name) to update details or avoid clutter
+            // Remove duplicates (same name) to update details
             profiles = profiles.filter(p => p.name.toLowerCase() !== name.trim().toLowerCase());
-            // Add to top
-            profiles.unshift({ name: name.trim(), contact: contact.trim(), address: address.trim() });
-            // Keep max 6 people
-            if(profiles.length > 6) profiles.pop();
-            localStorage.setItem('iskcon_family_list', JSON.stringify(profiles));
+            // Add new profile with ALL 4 fields
+            profiles.unshift({ 
+                name: name.trim(), 
+                contact: contact.trim(), 
+                homeAddress: homeAddress.trim(),
+                devotee: devotee.trim()
+            });
+            if(profiles.length > 8) profiles.pop(); // Keep last 8 people
+            localStorage.setItem('iskcon_family_list_v2', JSON.stringify(profiles));
         }
+        
+        window.clearFamilyData = function() {
+            if(confirm("Saved family list delete karni hai?")) {
+                localStorage.removeItem('iskcon_family_list_v2');
+                renderFamilyScreen();
+            }
+        };
 
         // --- RENDER FUNCTIONS ---
         function hideAll() { Object.values(views).forEach(el => el.classList.add('hidden')); }
@@ -220,17 +252,16 @@
 
             const profiles = getFamilyProfiles();
             if(profiles.length === 0) {
-                showNewForm(); // No history, show empty form
+                showNewForm();
             } else {
-                // Generate List HTML
                 const listEl = document.getElementById('family-list');
                 listEl.innerHTML = profiles.map((p, index) => `
                     <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex justify-between items-center">
-                        <div>
-                            <p class="font-bold text-gray-800">${p.name}</p>
-                            <p class="text-xs text-gray-500">${p.contact}</p>
+                        <div class="overflow-hidden">
+                            <p class="font-bold text-gray-800 truncate">${p.name}</p>
+                            <p class="text-xs text-gray-500">${p.homeAddress}</p>
                         </div>
-                        <button onclick="quickGenerate('${index}')" class="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-indigo-700 shadow-sm">
+                        <button onclick="quickGenerate('${index}')" class="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-indigo-700 shadow-sm shrink-0 ml-2">
                             Get Pass
                         </button>
                     </div>
@@ -244,16 +275,24 @@
             hideAll();
             if(!isRegistrationOpen) { views.closed.classList.remove('hidden'); return; }
             
-            // Show "Back" button if family history exists
-            const hasHistory = getFamilyProfiles().length > 0;
-            document.getElementById('back-to-family-btn').classList.toggle('hidden', !hasHistory);
+            // Back button logic
+            const profiles = getFamilyProfiles();
+            document.getElementById('back-to-family-btn').classList.toggle('hidden', profiles.length === 0);
             
-            document.getElementById('registration-form').reset();
+            // Auto-fill common fields (Address, Devotee, Phone) from last used profile if available
+            if(profiles.length > 0) {
+                document.getElementById('contact').value = profiles[0].contact;
+                document.getElementById('home_address').value = profiles[0].homeAddress;
+                document.getElementById('devotee').value = profiles[0].devotee;
+                document.getElementById('name').value = ""; // Clear name only
+            } else {
+                 document.getElementById('registration-form').reset();
+            }
+            
             views.form.classList.remove('hidden');
         };
 
-        window.renderForm = () => renderFamilyScreen(); // Alias default function
-
+        window.renderForm = () => renderFamilyScreen(); 
         window.renderAdminLogin = function() { hideAll(); views.login.classList.remove('hidden'); };
 
         // --- TICKET GENERATION ---
@@ -261,34 +300,38 @@
             const profiles = getFamilyProfiles();
             const p = profiles[index];
             if(!p) return;
-            
-            // Re-use logic, simulate form submission
-            await generateTicket(p.name, p.contact, p.address);
+            // Generate using stored profile data
+            await generateTicket(p.name, p.contact, p.homeAddress, p.devotee);
         };
 
-        async function generateTicket(name, contact, address) {
+        async function generateTicket(name, contact, homeAddress, devotee) {
             if(!userId) { alert("Network Error. Reloading..."); window.location.reload(); return; }
+
+            // 1. MOBILE VALIDATION
+            if(!/^\d{10}$/.test(contact)) {
+                alert("❌ अमान्य मोबाइल नंबर!\nकृपया सही 10 अंकों का नंबर डालें।");
+                return;
+            }
             
-            // Show loading overlay (simple alert or UI change)
-            const btn = document.querySelector('button'); // Any button clicked
+            const btn = document.querySelector('button:not(.hidden)');
             const originalText = btn ? btn.innerText : "";
             if(btn) { btn.disabled = true; btn.innerText = "Processing..."; }
 
             try {
-                // 1. Save to Firestore
                 const timestamp = new Date().toISOString();
-                const data = { name, contact, address, timestamp, userId };
+                const data = { name, contact, homeAddress, devotee, timestamp, userId };
                 
                 await setDoc(doc(db, `artifacts/${firebaseConfig.projectId}/users/${userId}/registrations/entryCard`), data);
                 await addDoc(collection(db, `artifacts/${firebaseConfig.projectId}/public/data/attendees`), data);
 
-                // 2. Save to Browser Memory (Updates list order)
-                saveProfileToMemory(name, contact, address);
+                // Save ALL fields to memory
+                saveProfileToMemory(name, contact, homeAddress, devotee);
 
-                // 3. Show Card
+                // Update Card UI
                 document.getElementById('card-name').textContent = name;
                 document.getElementById('card-contact').textContent = contact;
-                document.getElementById('card-address').textContent = address;
+                document.getElementById('card-home-address').textContent = homeAddress;
+                document.getElementById('card-devotee').textContent = devotee;
                 document.getElementById('card-timestamp').textContent = new Date(timestamp).toLocaleString('en-US', {dateStyle:'medium', timeStyle:'short'});
                 document.getElementById('card-user-id').textContent = userId;
 
@@ -303,8 +346,11 @@
 
         document.getElementById('registration-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const fd = new FormData(e.target);
-            await generateTicket(fd.get('name'), fd.get('contact'), fd.get('address'));
+            const name = document.getElementById('name').value;
+            const contact = document.getElementById('contact').value;
+            const homeAddress = document.getElementById('home_address').value;
+            const devotee = document.getElementById('devotee').value;
+            await generateTicket(name, contact, homeAddress, devotee);
         });
 
         // --- FIREBASE INIT ---
@@ -313,15 +359,12 @@
             db = getFirestore(app);
             auth = getAuth(app);
 
-            // Listen for settings
             onSnapshot(doc(db, `artifacts/${firebaseConfig.projectId}/config/settings`), (snap) => {
                 isRegistrationOpen = snap.exists() ? snap.data().isRegistrationOpen !== false : true;
                 if(!views.admin.classList.contains('hidden')) document.getElementById('reg-toggle').checked = isRegistrationOpen;
-                // Auto refresh if closed
                 if(!isRegistrationOpen && views.admin.classList.contains('hidden')) renderFamilyScreen();
             });
 
-            // Auth
             onAuthStateChanged(auth, async (user) => {
                 if (!user) { await signInAnonymously(auth); } 
                 else { 
@@ -361,10 +404,9 @@
 
         async function fetchAttendees() {
             const t = document.getElementById('attendee-list');
-            t.innerHTML = '<tr><td class="p-4 text-center" colspan="3">Loading data...</td></tr>';
+            t.innerHTML = '<tr><td class="p-4 text-center" colspan="4">Loading data...</td></tr>';
             try {
                 const s = await getDocs(collection(db, `artifacts/${firebaseConfig.projectId}/public/data/attendees`));
-                // Sort by time (newest first)
                 const d = []; s.forEach(doc => d.push(doc.data()));
                 d.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
                 
@@ -372,22 +414,25 @@
                     <tr class="hover:bg-gray-50 border-b border-gray-100">
                         <td class="p-3 font-medium">${r.name}</td>
                         <td class="p-3">${r.contact}</td>
-                        <td class="p-3 text-xs text-gray-500">${new Date(r.timestamp).toLocaleDateString()}</td>
+                        <td class="p-3 text-xs text-gray-500">${r.homeAddress || '-'}</td>
+                        <td class="p-3 text-xs text-gray-500">${r.devotee || r.address || '-'}</td>
                     </tr>`).join('');
             } catch(e) { t.innerHTML = 'Error loading.'; }
         }
 
         window.exportToCSV = async function() {
-            // Simple Export Logic
             const s = await getDocs(collection(db, `artifacts/${firebaseConfig.projectId}/public/data/attendees`));
-            let csv = "Name,Contact,Address,Time\n";
+            let csv = "Name,Contact,Address,Devotee,Time\n";
             s.forEach(d => {
                 const r = d.data();
-                csv += `"${r.name}","${r.contact}","${r.address}","${r.timestamp}"\n`;
+                // Handle old data (where 'address' was devotee) vs new data
+                const actualDevotee = r.devotee || r.address || "";
+                const actualAddress = r.homeAddress || "";
+                csv += `"${r.name}","${r.contact}","${actualAddress}","${actualDevotee}","${r.timestamp}"\n`;
             });
             const b = new Blob([csv],{type:'text/csv'});
             const u = URL.createObjectURL(b);
-            const a = document.createElement('a'); a.href=u; a.download='Data.csv'; a.click();
+            const a = document.createElement('a'); a.href=u; a.download='ISKCON_List.csv'; a.click();
         }
 
         window.clearAllData = async function() {
