@@ -7,27 +7,35 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Noto+Sans+Devanagari:wght@400;500;700&display=swap');
-        body { font-family: 'Noto Sans Devanagari', sans-serif; background-color: #fff7ed; background-image: radial-gradient(#fed7aa 1px, transparent 1px); background-size: 20px 20px; }
+        
+        body { 
+            font-family: 'Noto Sans Devanagari', sans-serif; 
+            background-color: #fff7ed;
+            background-image: radial-gradient(#fed7aa 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
         h1, h2, h3 { font-family: 'Playfair Display', serif; }
-        .ticket-edge-top { background-image: radial-gradient(circle at 10px top, transparent 10px, #ffffff 10px); background-position: -10px top; background-size: 20px 20px; background-repeat: repeat-x; height: 20px; }
+        .ticket-edge-top {
+            background-image: radial-gradient(circle at 10px top, transparent 10px, #ffffff 10px);
+            background-position: -10px top;
+            background-size: 20px 20px;
+            background-repeat: repeat-x;
+            height: 20px;
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-4">
 
     <div id="app-container" class="w-full max-w-md bg-white shadow-2xl rounded-xl overflow-hidden border-t-4 border-orange-600 relative">
+        
+        <button onclick="renderAdminLogin()" class="absolute top-3 right-3 z-20 p-2 text-orange-300 hover:text-orange-600 transition rounded-full hover:bg-orange-50" title="Admin Login">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+        </button>
+
         <div class="pt-8 pb-6 text-center bg-orange-50/80 border-b border-orange-100">
             <div class="flex flex-col items-center justify-center">
-                
-                <div class="mb-4 bg-white w-28 h-28 rounded-full border-4 border-orange-100 shadow-lg flex items-center justify-center overflow-hidden">
-                    
-                    <img 
-                        src="./iskcon2.png" 
-                        alt="ISKCON Logo" 
-                        class="w-20 h-20 object-contain"
-                    >
-                    
-                </div>
-
                 <h1 class="text-3xl font-extrabold text-orange-900 tracking-wide leading-tight">इस्कॉन उज्जैन</h1>
                 <h2 class="text-xl font-bold text-orange-700 uppercase tracking-wider mt-1 mb-2 border-b-2 border-orange-200 inline-block pb-1">Sunday Entry Pass</h2>
             </div>
@@ -43,7 +51,6 @@
 
             <div id="closed-section" class="hidden text-center py-6 bg-red-50 rounded-lg border border-red-100">
                 <p class="text-red-800 font-bold">🙏 क्षमा करें, पंजीकरण बंद है</p>
-                <button onclick="renderAdminLogin()" class="mt-4 text-xs text-gray-400 underline">Sevak Login</button>
             </div>
 
             <div id="family-section" class="hidden">
@@ -55,7 +62,6 @@
                 <button onclick="showNewForm()" class="w-full py-3 bg-orange-50 border border-orange-200 text-orange-800 rounded-lg text-sm font-bold hover:bg-orange-100 transition flex items-center justify-center gap-2">
                     <span>+</span> नया पास बनाएँ (New Entry)
                 </button>
-                <div class="text-center mt-6"><button onclick="renderAdminLogin()" class="text-xs text-gray-300">Admin</button></div>
             </div>
 
             <div id="form-section" class="hidden">
@@ -82,7 +88,7 @@
                 <div id="entry-card" class="w-full bg-white border-2 border-orange-500 rounded-xl overflow-hidden shadow-xl relative mb-6">
                     <div class="ticket-edge-top absolute top-0 left-0 w-full z-10"></div>
                     <div class="bg-white pt-6 pb-2 text-center border-b border-orange-100 relative z-0 mt-2">
-                         <div class="mx-auto mb-1 text-orange-600 w-12 h-12"><svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M50 20 C60 5 80 20 80 40 C80 60 50 80 50 80 C50 80 20 60 20 40 C20 20 40 5 50 20 Z" fill="#ea580c" opacity="0.8"/><path d="M50 25 C55 15 70 25 70 40 C70 55 50 70 50 70 C50 70 30 55 30 40 C30 25 45 15 50 25 Z" fill="#fff7ed"/><path d="M50 35 L50 60" stroke="#ea580c" stroke-width="2"/></svg></div>
+                         <div class="mx-auto mb-1 text-orange-600 w-12 h-12"><svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M50 20 C60 5 80 20 80 40 C80 60 50 80 50 80 C50 80 20 60 20 40 C20 20 40 5 50 20 Z" fill="#ea580c" opacity="0.8"/><path d="M50 25 C55 15 70 25 70 40 C70 55 50 70 50 70 C50 70 30 55 30 40 C30 25 45 15 50 25 Z" fill="#fff7ed"/><path d="M50 35 L50 60" stroke="#ea580c" stroke-width="3"/></svg></div>
                         <h3 class="text-2xl font-extrabold text-orange-800" style="font-family: 'Playfair Display', serif;">ISKCON UJJAIN</h3>
                         <p class="text-xs font-bold text-orange-600 uppercase tracking-widest">Sunday Entry Pass</p>
                         <div class="mt-3 bg-orange-50 py-2 border-y border-orange-100">
@@ -114,7 +120,8 @@
             </div>
             
             <div id="admin-login-section" class="hidden text-center">
-                <h2 class="text-xl font-bold text-gray-800 mb-6">Sevak Login Area</h2>
+                <div class="mx-auto mb-4 text-orange-600 w-16 h-16"><svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M50 20 C60 5 80 20 80 40 C80 60 50 80 50 80 C50 80 20 60 20 40 C20 20 40 5 50 20 Z" fill="#ea580c" opacity="0.8"/><path d="M50 25 C55 15 70 25 70 40 C70 55 50 70 50 70 C50 70 30 55 30 40 C30 25 45 15 50 25 Z" fill="#fff7ed"/><path d="M50 35 L50 60" stroke="#ea580c" stroke-width="2"/></svg></div>
+                <h2 class="text-xl font-bold text-gray-800 mb-6 font-serif">Sevak Login Area</h2>
                 <form id="admin-login-form" class="space-y-4"><input type="email" id="admin-email" required placeholder="Email ID" class="w-full p-3 bg-orange-50/50 border-2 border-orange-100 rounded-lg"><input type="password" id="admin-password" required placeholder="Password" class="w-full p-3 bg-orange-50/50 border-2 border-orange-100 rounded-lg"><button type="submit" class="w-full bg-orange-800 text-white py-3 rounded-lg font-bold">Login Securely</button></form>
                 <button onclick="renderForm()" class="mt-6 text-sm text-gray-400 hover:text-orange-700 underline">Cancel</button>
             </div>
@@ -201,20 +208,16 @@
             
             try {
                 // --- 100% FIXED DUPLICATE LOGIC ---
-                const todayStr = new Date().toISOString().split('T')[0]; // "YYYY-MM-DD"
+                const todayStr = new Date().toISOString().split('T')[0];
                 let isDuplicate = false;
                 let existingTimestamp = new Date().toISOString();
 
-                // Clean Query
                 const q = query(collection(db, `artifacts/${firebaseConfig.projectId}/public/data/attendees`), where("contact", "==", contact.trim()));
                 const snapshot = await getDocs(q);
                 
                 snapshot.forEach(doc => {
                     const d = doc.data();
-                    // Extract Date Only from Timestamp
                     const dbDate = new Date(d.timestamp).toISOString().split('T')[0];
-                    
-                    // Match: Name + Phone + Date
                     if (d.name.toLowerCase().trim() === name.toLowerCase().trim() && dbDate === todayStr) {
                         isDuplicate = true;
                         existingTimestamp = d.timestamp;
@@ -224,12 +227,11 @@
                 if (!isDuplicate) {
                     const timestamp = new Date().toISOString();
                     const data = { name: name.trim(), contact: contact.trim(), homeAddress: homeAddress.trim(), devotee: devotee.trim(), timestamp, userId };
-                    
                     await setDoc(doc(db, `artifacts/${firebaseConfig.projectId}/users/${userId}/registrations/entryCard`), data);
                     await addDoc(collection(db, `artifacts/${firebaseConfig.projectId}/public/data/attendees`), data);
                     existingTimestamp = timestamp;
                 } else {
-                    alert("⚠️ आपकी आज की हाजिरी पहले ही लग चुकी है। (Attendance already marked!)");
+                    alert("⚠️ आपकी आज की हाजिरी पहले ही लग चुकी है।");
                 }
 
                 saveProfileToMemory(name, contact, homeAddress, devotee);
@@ -265,7 +267,11 @@
                 const btn = document.getElementById('reg-toggle-btn');
                 if(btn) { btn.innerText = isRegistrationOpen ? "OPEN" : "CLOSED"; btn.className = isRegistrationOpen ? "px-4 py-1.5 rounded-full text-xs font-extrabold bg-green-600 text-white" : "px-4 py-1.5 rounded-full text-xs font-extrabold bg-red-600 text-white"; }
                 if(!isRegistrationOpen && views.admin.classList.contains('hidden')) renderFamilyScreen();
+            }, (error) => {
+                errorMsg.innerText = "Error: Check Firestore Rules.";
+                errorMsg.classList.remove('hidden');
             });
+
             onAuthStateChanged(auth, async (user) => {
                 if (!user) { await signInAnonymously(auth); } 
                 else { userId = user.uid; if(ADMIN_EMAILS.includes(user.email)) { hideAll(); views.admin.classList.remove('hidden'); fetchAttendees(); } else { renderFamilyScreen(); } }
