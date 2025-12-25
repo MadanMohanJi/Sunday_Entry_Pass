@@ -303,7 +303,7 @@
         }
 
         window.clearAllData = async function() {
-            if(!confirm("Are you sure?")) return; const p = prompt("Password:"); if(p !== "prabhupada@108") return alert("Wrong Password!");
+            if(!confirm("Are you sure?")) return; const p = prompt("Password:"); if(p !== "Prabhupada@108") return alert("Wrong Password!");
             const b = writeBatch(db); const s = await getDocs(collection(db, `artifacts/${firebaseConfig.projectId}/public/data/attendees`)); s.forEach(d => b.delete(d.ref)); await b.commit(); fetchAttendees(); alert("Cleared!");
         }
         
