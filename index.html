@@ -28,18 +28,19 @@
 
     <div id="app-container" class="w-full max-w-md bg-white shadow-2xl rounded-xl overflow-hidden border-t-4 border-orange-600 relative">
         
-        <button onclick="renderAdminLogin()" class="absolute top-3 right-3 z-20 p-2 text-orange-300 hover:text-orange-600 transition rounded-full hover:bg-orange-50" title="Admin Login">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <button onclick="renderAdminLogin()" class="absolute top-4 right-4 z-50 p-2 bg-white text-orange-700 rounded-full shadow-md border border-orange-200 hover:bg-orange-100 transition-all transform hover:scale-110" title="Admin Login">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
         </button>
 
-        <div class="pt-8 pb-6 text-center bg-orange-50/80 border-b border-orange-100">
+        <div class="pt-10 pb-8 text-center bg-orange-50/80 border-b border-orange-100">
             <div class="flex flex-col items-center justify-center">
-                <h1 class="text-3xl font-extrabold text-orange-900 tracking-wide leading-tight">इस्कॉन उज्जैन</h1>
+                
+                <h1 class="text-4xl font-extrabold text-orange-900 tracking-wide leading-tight mb-1">इस्कॉन उज्जैन</h1>
                 <h2 class="text-xl font-bold text-orange-700 uppercase tracking-wider mt-1 mb-2 border-b-2 border-orange-200 inline-block pb-1">Sunday Entry Pass</h2>
             </div>
-            <p class="text-[10px] font-medium text-orange-600 uppercase tracking-widest opacity-80 leading-relaxed mt-2">Founder Acharya: His Divine Grace<br>A.C. Bhaktivedanta Swami Prabhupada</p>
+            <p class="text-[10px] font-medium text-orange-600 uppercase tracking-widest opacity-80 leading-relaxed mt-3">Founder Acharya: His Divine Grace<br>A.C. Bhaktivedanta Swami Prabhupada</p>
         </div>
 
         <div class="p-6 md:p-8">
@@ -72,11 +73,11 @@
                     <h2 class="text-xl font-bold text-gray-800">अतिथि पंजीकरण</h2>
                 </div>
                 <form id="registration-form" class="space-y-5" autocomplete="off">
-                    <div class="group"><label class="block text-xs font-bold text-orange-800 uppercase mb-1">पूरा नाम (Full Name)</label><input type="text" id="name" required class="w-full p-3 bg-orange-50/50 border-b-2 border-orange-200 focus:border-orange-600 outline-none transition rounded-t-md"></div>
-                    <div class="group"><label class="block text-xs font-bold text-orange-800 uppercase mb-1">मोबाइल नंबर (Mobile)</label><input type="tel" id="contact" required maxlength="10" class="w-full p-3 bg-orange-50/50 border-b-2 border-orange-200 focus:border-orange-600 outline-none transition rounded-t-md"></div>
-                    <div class="group"><label class="block text-xs font-bold text-orange-800 uppercase mb-1">घर का पता (Address)</label><input type="text" id="home_address" required class="w-full p-3 bg-orange-50/50 border-b-2 border-orange-200 focus:border-orange-600 outline-none transition rounded-t-md"></div>
-                    <div class="group"><label class="block text-xs font-bold text-orange-800 uppercase mb-1">मंदिर में किससे जुड़े हैं?</label><input type="text" id="devotee" required class="w-full p-3 bg-orange-50/50 border-b-2 border-orange-200 focus:border-orange-600 outline-none transition rounded-t-md"></div>
-                    <button type="submit" class="w-full mt-4 bg-orange-700 text-white py-3.5 rounded-lg font-bold shadow-md hover:bg-orange-800 transition-transform active:scale-95">हरे कृष्णा (Get Pass)</button>
+                    <div class="group"><label class="block text-xs font-bold text-orange-800 uppercase mb-1">पूरा नाम (Full Name)</label><input type="text" id="name" required placeholder="अपना नाम लिखें" class="w-full p-3 bg-orange-50/50 border-b-2 border-orange-200 focus:border-orange-600 outline-none transition rounded-t-md placeholder-gray-400 text-gray-800"></div>
+                    <div class="group"><label class="block text-xs font-bold text-orange-800 uppercase mb-1">मोबाइल नंबर (Mobile)</label><input type="tel" id="contact" required maxlength="10" placeholder="10 अंकों का नंबर" class="w-full p-3 bg-orange-50/50 border-b-2 border-orange-200 focus:border-orange-600 outline-none transition rounded-t-md placeholder-gray-400 text-gray-800"></div>
+                    <div class="group"><label class="block text-xs font-bold text-orange-800 uppercase mb-1">घर का पता (Address)</label><input type="text" id="home_address" required placeholder="अपना पता लिखें" class="w-full p-3 bg-orange-50/50 border-b-2 border-orange-200 focus:border-orange-600 outline-none transition rounded-t-md placeholder-gray-400 text-gray-800"></div>
+                    <div class="group"><label class="block text-xs font-bold text-orange-800 uppercase mb-1">मंदिर में किससे जुड़े हैं?</label><input type="text" id="devotee" required placeholder="Eg. HG Prabhu Ji Name" class="w-full p-3 bg-orange-50/50 border-b-2 border-orange-200 focus:border-orange-600 outline-none transition rounded-t-md placeholder-gray-400 text-gray-800"></div>
+                    <button type="submit" id="submit-button" class="w-full mt-4 bg-orange-700 text-white py-3.5 rounded-lg font-bold shadow-md hover:bg-orange-800 transition-transform active:scale-95 flex items-center justify-center">हरे कृष्णा (Get Pass)</button>
                 </form>
             </div>
 
@@ -88,15 +89,13 @@
                 <div id="entry-card" class="w-full bg-white border-2 border-orange-500 rounded-xl overflow-hidden shadow-xl relative mb-6">
                     <div class="ticket-edge-top absolute top-0 left-0 w-full z-10"></div>
                     <div class="bg-white pt-6 pb-2 text-center border-b border-orange-100 relative z-0 mt-2">
-                         <div class="mx-auto mb-1 text-orange-600 w-12 h-12"><svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M50 20 C60 5 80 20 80 40 C80 60 50 80 50 80 C50 80 20 60 20 40 C20 20 40 5 50 20 Z" fill="#ea580c" opacity="0.8"/><path d="M50 25 C55 15 70 25 70 40 C70 55 50 70 50 70 C50 70 30 55 30 40 C30 25 45 15 50 25 Z" fill="#fff7ed"/><path d="M50 35 L50 60" stroke="#ea580c" stroke-width="3"/></svg></div>
-                        <h3 class="text-2xl font-extrabold text-orange-800" style="font-family: 'Playfair Display', serif;">ISKCON UJJAIN</h3>
+                         <h3 class="text-2xl font-extrabold text-orange-800 tracking-wide mt-2" style="font-family: 'Playfair Display', serif;">ISKCON UJJAIN</h3>
                         <p class="text-xs font-bold text-orange-600 uppercase tracking-widest">Sunday Entry Pass</p>
                         <div class="mt-3 bg-orange-50 py-2 border-y border-orange-100">
                             <p id="card-timestamp" class="text-xl font-bold text-orange-800 font-mono"></p>
                         </div>
                     </div>
                     <div class="p-6 space-y-4 relative">
-                        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-48 opacity-[0.05] pointer-events-none text-orange-900"><svg viewBox="0 0 100 100" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M50 20 C60 5 80 20 80 40 C80 60 50 80 50 80 C50 80 20 60 20 40 C20 20 40 5 50 20 Z"/></svg></div>
                         <div><p class="text-[10px] uppercase text-orange-400 font-bold tracking-wider">Visitor Name</p><p id="card-name" class="text-3xl font-bold text-gray-900 leading-tight font-serif"></p></div>
                         <div class="border-t border-dashed border-orange-200"></div>
                         <div class="grid grid-cols-2 gap-4">
@@ -107,23 +106,22 @@
                     </div>
                     <div class="bg-orange-50 p-2 text-center border-t border-orange-100"><p class="text-[10px] uppercase text-orange-400 font-bold">Pass ID</p><p id="card-user-id" class="text-sm font-mono text-orange-800 font-bold uppercase tracking-wider"></p></div>
                 </div>
-                <div class="space-y-3"><button onclick="downloadCard()" class="w-full bg-green-600 text-white py-3 rounded-lg font-bold shadow hover:bg-green-700">Download</button><button onclick="renderFamilyScreen()" class="w-full text-orange-700 bg-orange-50 border border-orange-200 py-3 rounded-lg text-sm font-bold hover:bg-orange-100">+ Add Person</button></div>
+                <div class="space-y-3"><button onclick="downloadCard()" class="w-full bg-green-600 text-white py-3 rounded-lg font-bold shadow hover:bg-green-700 flex items-center justify-center gap-2">Download</button><button onclick="renderFamilyScreen()" class="w-full text-orange-700 bg-orange-50 border border-orange-200 py-3 rounded-lg text-sm font-bold hover:bg-orange-100">+ Add Person</button></div>
             </div>
 
             <div id="admin-dashboard-section" class="hidden">
-                <div class="flex justify-between items-center mb-4 pb-2 border-b border-gray-100"><h2 class="text-lg font-bold text-gray-800">Admin Seva Panel</h2><button onclick="handleSignOut()" class="text-xs text-red-500 font-bold bg-red-50 px-3 py-1 rounded-full">LOGOUT</button></div>
+                <div class="flex justify-between items-center mb-4 pb-2 border-b border-gray-100"><h2 class="text-lg font-bold text-gray-800">Admin Seva Panel</h2><button onclick="handleSignOut()" class="text-xs text-red-500 font-bold bg-red-50 px-3 py-1 rounded-full hover:bg-red-100">LOGOUT</button></div>
                 <div class="bg-orange-50 rounded-xl p-4 mb-4 border border-orange-200 shadow-sm">
                     <div class="flex items-center justify-between mb-4 bg-white p-3 rounded-lg border border-orange-100"><span class="text-sm font-bold text-orange-900">Registration Status</span><button id="reg-toggle-btn" onclick="toggleRegistrationStatus()" class="px-4 py-1.5 rounded-full text-xs font-extrabold transition shadow-sm"></button></div>
-                    <div class="flex gap-3"><button onclick="exportToCSV()" class="flex-1 bg-white text-orange-800 py-2.5 rounded-lg text-xs font-bold shadow-sm border border-orange-200">Excel Export</button><button onclick="clearAllData()" class="flex-1 bg-white text-red-600 py-2.5 rounded-lg text-xs font-bold shadow-sm border border-red-200">Clear Data</button></div>
+                    <div class="flex gap-3"><button onclick="exportToCSV()" class="flex-1 bg-white text-orange-800 py-2.5 rounded-lg text-xs font-bold shadow-sm border border-orange-200 hover:bg-orange-100">Excel Export</button><button onclick="clearAllData()" class="flex-1 bg-white text-red-600 py-2.5 rounded-lg text-xs font-bold shadow-sm border border-red-200 hover:bg-red-50">Clear Data</button></div>
                 </div>
                 <div class="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm"><div class="max-h-80 overflow-y-auto"><table class="w-full text-left text-sm"><thead class="bg-orange-50/80 sticky top-0 text-orange-800 text-xs uppercase font-bold"><tr><th class="p-3">Name</th><th class="p-3">Phone</th><th class="p-3">Devotee</th></tr></thead><tbody id="attendee-list" class="divide-y divide-orange-50"></tbody></table></div></div>
             </div>
             
             <div id="admin-login-section" class="hidden text-center">
-                <div class="mx-auto mb-4 text-orange-600 w-16 h-16"><svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M50 20 C60 5 80 20 80 40 C80 60 50 80 50 80 C50 80 20 60 20 40 C20 20 40 5 50 20 Z" fill="#ea580c" opacity="0.8"/><path d="M50 25 C55 15 70 25 70 40 C70 55 50 70 50 70 C50 70 30 55 30 40 C30 25 45 15 50 25 Z" fill="#fff7ed"/><path d="M50 35 L50 60" stroke="#ea580c" stroke-width="2"/></svg></div>
-                <h2 class="text-xl font-bold text-gray-800 mb-6 font-serif">Sevak Login Area</h2>
-                <form id="admin-login-form" class="space-y-4"><input type="email" id="admin-email" required placeholder="Email ID" class="w-full p-3 bg-orange-50/50 border-2 border-orange-100 rounded-lg"><input type="password" id="admin-password" required placeholder="Password" class="w-full p-3 bg-orange-50/50 border-2 border-orange-100 rounded-lg"><button type="submit" class="w-full bg-orange-800 text-white py-3 rounded-lg font-bold">Login Securely</button></form>
-                <button onclick="renderForm()" class="mt-6 text-sm text-gray-400 hover:text-orange-700 underline">Cancel</button>
+                <h2 class="text-xl font-bold text-gray-800 mb-6 font-serif mt-8">Sevak Login Area</h2>
+                <form id="admin-login-form" class="space-y-4"><input type="email" id="admin-email" required placeholder="Email ID" class="w-full p-3 bg-orange-50/50 border-2 border-orange-100 rounded-lg outline-none focus:border-orange-400"><input type="password" id="admin-password" required placeholder="Password" class="w-full p-3 bg-orange-50/50 border-2 border-orange-100 rounded-lg outline-none focus:border-orange-400"><button type="submit" class="w-full bg-orange-800 text-white py-3 rounded-lg font-bold hover:bg-orange-900 shadow-md">Login Securely</button></form>
+                <button onclick="renderForm()" class="mt-6 text-sm text-gray-400 hover:text-orange-700 underline transition">Cancel & Go Back</button>
             </div>
         </div>
     </div>
@@ -192,8 +190,8 @@
             views.form.classList.remove('hidden');
         };
 
-        window.renderForm = () => renderFamilyScreen(); 
         window.renderAdminLogin = function() { hideAll(); views.login.classList.remove('hidden'); };
+        window.renderForm = () => renderFamilyScreen();
 
         window.quickGenerate = async function(index) {
             const p = getFamilyProfiles()[index]; if(p) await generateTicket(p.name, p.contact, p.homeAddress, p.devotee);
@@ -207,7 +205,7 @@
             if(btn) { btn.disabled = true; btn.innerText = 'Verifying...'; }
             
             try {
-                // --- 100% FIXED DUPLICATE LOGIC ---
+                // --- DUPLICATE CHECK ---
                 const todayStr = new Date().toISOString().split('T')[0];
                 let isDuplicate = false;
                 let existingTimestamp = new Date().toISOString();
@@ -305,7 +303,7 @@
         }
 
         window.clearAllData = async function() {
-            if(!confirm("Are you sure?")) return; const p = prompt("Password:"); if(p !== "Prabhupada@108") return alert("Wrong Password!");
+            if(!confirm("Are you sure?")) return; const p = prompt("Password:"); if(p !== "prabhupada@108") return alert("Wrong Password!");
             const b = writeBatch(db); const s = await getDocs(collection(db, `artifacts/${firebaseConfig.projectId}/public/data/attendees`)); s.forEach(d => b.delete(d.ref)); await b.commit(); fetchAttendees(); alert("Cleared!");
         }
         
