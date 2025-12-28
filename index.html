@@ -10,6 +10,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;500;700&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
     
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
     <style>
         body { 
             font-family: 'Noto Sans Devanagari', 'Mangal', sans-serif !important; 
@@ -142,7 +145,7 @@
                     <div class="flex gap-3">
                         <button onclick="exportToExcel()" class="flex-1 bg-green-600 text-white py-2.5 rounded-lg text-xs font-bold shadow-sm border border-green-700 hover:bg-green-700 flex items-center justify-center gap-1">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                            Download Excel
+                            Download Excel (.xlsx)
                         </button>
                         <button onclick="clearAllData()" class="flex-1 bg-white text-red-600 py-2.5 rounded-lg text-xs font-bold shadow-sm border border-red-200 hover:bg-red-50">Clear Data</button>
                     </div>
@@ -372,54 +375,28 @@
             }
         }
 
-        // ✅ FIXED: EXCEL COMPATIBLE EXPORT (FOR HINDI SUPPORT)
-        window.exportToExcel = async function() {
+        // ✅ FIXED: REAL EXCEL EXPORT (USING SHEETJS LIBRARY)
+        window.exportToExcel = function() {
             if (currentViewData.length === 0) { alert("No data to export."); return; }
+
+            // 1. Prepare Data for SheetJS
+            const cleanData = currentViewData.map(r => ({
+                Name: r.name,
+                Contact: r.contact,
+                Address: r.homeAddress,
+                Devotee: r.devotee,
+                Time: new Date(r.timestamp).toLocaleString('en-IN')
+            }));
+
+            // 2. Create Sheet
+            const ws = XLSX.utils.json_to_sheet(cleanData);
             
-            // We use HTML Table syntax for Excel to guarantee UTF-8 encoding is respected
-            let excelContent = `
-                <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
-                <head>
-                    <meta charset="UTF-8"> 
-                    <style>
-                        table { border-collapse: collapse; width: 100%; }
-                        th, td { border: 1px solid #000; padding: 5px; text-align: left; }
-                    </style>
-                </head>
-                <body>
-                    <table>
-                        <thead>
-                            <tr style="background-color: #f0f0f0;">
-                                <th>Name</th>
-                                <th>Contact</th>
-                                <th>Address</th>
-                                <th>Devotee</th>
-                                <th>Time</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-            `;
+            // 3. Create Workbook
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Attendees");
 
-            currentViewData.forEach(r => {
-                excelContent += `
-                    <tr>
-                        <td>${r.name || ''}</td>
-                        <td style="mso-number-format:'\@'">${r.contact || ''}</td>
-                        <td>${r.homeAddress || ''}</td>
-                        <td>${r.devotee || ''}</td>
-                        <td>${new Date(r.timestamp).toLocaleString()}</td>
-                    </tr>
-                `;
-            });
-
-            excelContent += `</tbody></table></body></html>`;
-
-            const blob = new Blob([excelContent], { type: "application/vnd.ms-excel" });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `Data_${document.getElementById('admin-date-filter').value}.xls`; // Note: .xls extension
-            a.click();
+            // 4. Download Real .xlsx File
+            XLSX.writeFile(wb, `Data_${document.getElementById('admin-date-filter').value}.xlsx`);
         }
 
         window.downloadCard = async function() {
