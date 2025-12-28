@@ -11,18 +11,18 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* ✅ FIXED: Mobile Safe Font Stack for Hindi */
+        /* Force Hindi Fonts */
         body { 
-            font-family: 'Noto Sans Devanagari', 'Mangal', 'Nirmala UI', 'Kohinoor Devanagari', sans-serif !important; 
+            font-family: 'Noto Sans Devanagari', 'Mangal', sans-serif !important; 
             background-color: #fff7ed;
             background-image: radial-gradient(#fed7aa 1px, transparent 1px);
             background-size: 20px 20px;
         }
         h1, h2, h3 { font-family: 'Playfair Display', serif; }
         
-        /* Force font on the card specifically */
+        /* Force Font on Card */
         #entry-card, #entry-card * {
-            font-family: 'Noto Sans Devanagari', 'Mangal', 'Nirmala UI', sans-serif !important;
+            font-family: 'Noto Sans Devanagari', sans-serif !important;
         }
 
         .ticket-edge-top {
@@ -117,10 +117,7 @@
                     </div>
                     <div class="bg-orange-50 p-2 text-center border-t border-orange-100"><p class="text-[10px] uppercase text-orange-400 font-bold">Pass ID</p><p id="card-user-id" class="text-sm font-mono text-orange-800 font-bold uppercase tracking-wider"></p></div>
                 </div>
-                <div class="space-y-3">
-                    <button id="download-btn" onclick="downloadCard()" class="w-full bg-green-600 text-white py-3 rounded-lg font-bold shadow hover:bg-green-700 flex items-center justify-center gap-2">Download</button>
-                    <button onclick="renderFamilyScreen()" class="w-full text-orange-700 bg-orange-50 border border-orange-200 py-3 rounded-lg text-sm font-bold hover:bg-orange-100">+ Add Person</button>
-                </div>
+                <div class="space-y-3"><button onclick="downloadCard()" class="w-full bg-green-600 text-white py-3 rounded-lg font-bold shadow hover:bg-green-700 flex items-center justify-center gap-2">Download</button><button onclick="renderFamilyScreen()" class="w-full text-orange-700 bg-orange-50 border border-orange-200 py-3 rounded-lg text-sm font-bold hover:bg-orange-100">+ Add Person</button></div>
             </div>
 
             <div id="admin-dashboard-section" class="hidden">
@@ -368,6 +365,7 @@
             }
         }
 
+        // ✅ FIXED: CSV DATA EXPORT WITH BOM FOR MOBILE EXCEL
         window.exportToCSV = async function() {
             if (currentViewData.length === 0) { alert("No data to export."); return; }
             let csv = "Name,Contact,Address,Devotee,Time\n";
@@ -380,21 +378,10 @@
             const a = document.createElement('a'); a.href=u; a.download=`Data_${document.getElementById('admin-date-filter').value}.csv`; a.click();
         }
 
-        // ✅ FIXED: DELAY FOR MOBILE HINDI FONT LOADING
         window.downloadCard = async function() {
-            const btn = document.getElementById('download-btn');
-            btn.innerText = "Generating...";
-            btn.disabled = true;
-
-            // Wait 500ms to allow mobile fonts to settle
-            await new Promise(resolve => setTimeout(resolve, 500));
-
             const c = document.getElementById('entry-card');
             const canvas = await html2canvas(c, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
             const link = document.createElement('a'); link.href = canvas.toDataURL("image/png"); link.download = `ISKCON_Pass.png`; link.click();
-
-            btn.innerText = "Download";
-            btn.disabled = false;
         };
 
         window.toggleRegistrationStatus = async () => { await setDoc(doc(db, `artifacts/${firebaseConfig.projectId}/config/settings`), {isRegistrationOpen:!isRegistrationOpen}, {merge:true}); };
