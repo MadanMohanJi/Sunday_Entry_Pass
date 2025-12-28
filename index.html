@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Krishna Balram Hall Pass</title>
+    <title>ISKCON UJJAIN TEMPLE PASS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Noto+Sans+Devanagari:wght@400;500;700&display=swap');
@@ -38,8 +38,21 @@
         <!-- Header -->
         <div class="pt-10 pb-8 text-center bg-orange-50/80 border-b border-orange-100">
             <div class="flex flex-col items-center justify-center">
+                <!-- SVG LOGO -->
+                <div class="mb-3 text-orange-600">
+                    <svg width="80" height="80" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M50 20 C60 5 80 20 80 40 C80 60 50 80 50 80 C50 80 20 60 20 40 C20 20 40 5 50 20 Z" fill="#ea580c" opacity="0.8"/>
+                        <path d="M50 25 C55 15 70 25 70 40 C70 55 50 70 50 70 C50 70 30 55 30 40 C30 25 45 15 50 25 Z" fill="#fff7ed"/>
+                        <path d="M48 35 L48 60 M52 35 L52 60" stroke="#ea580c" stroke-width="2"/>
+                        <path d="M48 60 Q50 65 52 60" stroke="#ea580c" stroke-width="2" fill="none"/>
+                        <path d="M50 30 L50 35" stroke="#ea580c" stroke-width="2"/>
+                    </svg>
+                </div>
+
                 <h1 class="text-4xl font-extrabold text-orange-900 tracking-wide leading-tight mb-1">इस्कॉन उज्जैन</h1>
-                <h2 class="text-xl font-bold text-orange-700 uppercase tracking-wider mt-1 mb-2 border-b-2 border-orange-200 inline-block pb-1">Krishna Balram Hall Pass</h2>
+                
+                <!-- ✅ TITLE UPDATED -->
+                <h2 class="text-xl font-bold text-orange-700 uppercase tracking-wider mt-1 mb-2 border-b-2 border-orange-200 inline-block pb-1">ISKCON UJJAIN TEMPLE PASS</h2>
             </div>
             <p class="text-[10px] font-medium text-orange-600 uppercase tracking-widest opacity-80 leading-relaxed mt-3">Founder Acharya: His Divine Grace<br>A.C. Bhaktivedanta Swami Prabhupada</p>
         </div>
@@ -65,6 +78,7 @@
                 <button onclick="showNewForm()" class="w-full py-3 bg-orange-50 border border-orange-200 text-orange-800 rounded-lg text-sm font-bold hover:bg-orange-100 transition flex items-center justify-center gap-2">
                     <span>+</span> नया पास बनाएँ (New Entry)
                 </button>
+                <div class="text-center mt-6"><button onclick="renderAdminLogin()" class="text-xs text-gray-300">Admin</button></div>
             </div>
 
             <div id="form-section" class="hidden">
@@ -92,7 +106,10 @@
                     <div class="ticket-edge-top absolute top-0 left-0 w-full z-10"></div>
                     <div class="bg-white pt-6 pb-2 text-center border-b border-orange-100 relative z-0 mt-2">
                         <h3 class="text-2xl font-extrabold text-orange-800 tracking-wide mt-2" style="font-family: 'Playfair Display', serif;">ISKCON UJJAIN</h3>
-                        <p class="text-xs font-bold text-orange-600 uppercase tracking-widest">Krishna Balram Hall Pass</p>
+                        
+                        <!-- ✅ TICKET TITLE UPDATED -->
+                        <p class="text-xs font-bold text-orange-600 uppercase tracking-widest">TEMPLE ENTRY PASS</p>
+                        
                         <div class="mt-3 bg-orange-50 py-2 border-y border-orange-100">
                             <p id="card-timestamp" class="text-xl font-bold text-orange-800 font-mono"></p>
                         </div>
@@ -120,7 +137,7 @@
                         <button id="reg-toggle-btn" onclick="toggleRegistrationStatus()" class="px-4 py-1.5 rounded-full text-xs font-extrabold transition shadow-sm"></button>
                     </div>
                     
-                    <!-- ✅ DATE FILTER (FIXED) -->
+                    <!-- ✅ DATE FILTER -->
                     <div class="mb-4">
                         <label class="block text-xs font-bold text-orange-800 mb-1">Select Date to View:</label>
                         <div class="flex gap-2">
@@ -148,8 +165,8 @@
         import { getAuth, signInAnonymously, onAuthStateChanged, signOut, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, onSnapshot, collection, addDoc, getDocs, writeBatch, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         
+        // ✅ NEW CONFIGURATION (entrycard-1a28a)
         const firebaseConfig = {
- 
             apiKey: "AIzaSyBOc6EeIc59S6COb80NJfYyl3GdRiI2H6k",
             authDomain: "entrycard-1a28a.firebaseapp.com",
             projectId: "entrycard-1a28a",
@@ -157,7 +174,7 @@
             messagingSenderId: "571342230056",
             appId: "1:571342230056:web:de9f4c19cd820cee6cdb1d",
             measurementId: "G-MQWXKCQ85H"
-};
+        };
         const ADMIN_EMAILS = ["shivesh211204@gmail.com", "iskcon.sunday.feast@gmail.com"];
 
         let app, db, auth, userId = null, isRegistrationOpen = true;
@@ -203,6 +220,7 @@
             if(profiles.length > 0) {
                 document.getElementById('home_address').value = profiles[0].homeAddress;
                 document.getElementById('devotee').value = profiles[0].devotee;
+                // Clear Name & Contact
                 document.getElementById('name').value = "";
                 document.getElementById('contact').value = ""; 
             } else { 
@@ -218,9 +236,7 @@
             const p = getFamilyProfiles()[index]; if(p) await generateTicket(p.name, p.contact, p.homeAddress, p.devotee);
         };
 
-        // --- 100% CORRECT DUPLICATE & DATE LOGIC ---
         function getLocalDateString(isoDate) {
-            // Helper to get YYYY-MM-DD in Local Time (Fixed for India)
             const d = new Date(isoDate);
             return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
         }
@@ -234,7 +250,7 @@
             
             try {
                 const now = new Date();
-                const todayStr = getLocalDateString(now); // Local Today
+                const todayStr = getLocalDateString(now); 
                 let isDuplicate = false;
                 let existingTimestamp = now.toISOString();
 
@@ -243,7 +259,7 @@
                 
                 snapshot.forEach(doc => {
                     const d = doc.data();
-                    const rowDate = getLocalDateString(d.timestamp); // Local DB Date
+                    const rowDate = getLocalDateString(d.timestamp); 
                     if (d.name.toLowerCase().trim() === name.toLowerCase().trim() && rowDate === todayStr) {
                         isDuplicate = true;
                         existingTimestamp = d.timestamp;
@@ -254,7 +270,8 @@
                     const timestamp = now.toISOString();
                     const data = { 
                         name: name.trim(), contact: contact.trim(), homeAddress: homeAddress.trim(), devotee: devotee.trim(), 
-                        timestamp, userId
+                        timestamp, userId,
+                        dateString: todayStr 
                     };
                     await setDoc(doc(db, `artifacts/${firebaseConfig.projectId}/users/${userId}/registrations/entryCard`), data);
                     await addDoc(collection(db, `artifacts/${firebaseConfig.projectId}/public/data/attendees`), data);
@@ -269,7 +286,9 @@
                 document.getElementById('card-contact').textContent = contact;
                 document.getElementById('card-home-address').textContent = homeAddress;
                 document.getElementById('card-devotee').textContent = devotee;
-                document.getElementById('card-timestamp').textContent = new Date(existingTimestamp).toLocaleString('en-IN', {
+                
+                const dateObj = new Date(existingTimestamp);
+                document.getElementById('card-timestamp').textContent = dateObj.toLocaleString('en-IN', {
                     weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true
                 });
                 document.getElementById('card-user-id').textContent = 'ID:' + userId.substring(0,6).toUpperCase();
@@ -305,28 +324,28 @@
                 if (!user) { await signInAnonymously(auth); } 
                 else { 
                     userId = user.uid; 
-                    // Set default filter to Local Today
                     const today = new Date();
                     document.getElementById('admin-date-filter').value = getLocalDateString(today);
-                    
                     if(ADMIN_EMAILS.includes(user.email)) { hideAll(); views.admin.classList.remove('hidden'); fetchAttendees(); } 
                     else { renderFamilyScreen(); } 
                 }
             });
         }
 
-        // ✅ FIXED ADMIN FETCH (LOCAL TIME)
+        // ✅ FIXED DATE FILTER LOGIC
         async function fetchAttendees() {
             const t = document.getElementById('attendee-list'); 
             const selectedDate = document.getElementById('admin-date-filter').value; 
             t.innerHTML = '<tr><td class="p-4 text-center">Loading...</td></tr>';
             
             try {
+                // Fetch ALL data and filter client-side (Reliable for Date String)
                 const s = await getDocs(collection(db, `artifacts/${firebaseConfig.projectId}/public/data/attendees`));
                 currentViewData = [];
                 s.forEach(doc => {
                     const d = doc.data();
-                    const rowDate = getLocalDateString(d.timestamp); // Match Logic
+                    // Priority: dateString (New Data) > timestamp fallback (Old Data)
+                    const rowDate = d.dateString || getLocalDateString(d.timestamp); 
                     if (rowDate === selectedDate) currentViewData.push(d);
                 });
                 currentViewData.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
