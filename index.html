@@ -11,20 +11,20 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Apply Hindi Font Globally */
+        /* ✅ FIXED: Mobile Safe Font Stack for Hindi */
         body { 
-            font-family: 'Noto Sans Devanagari', sans-serif; 
+            font-family: 'Noto Sans Devanagari', 'Mangal', 'Nirmala UI', 'Kohinoor Devanagari', sans-serif !important; 
             background-color: #fff7ed;
             background-image: radial-gradient(#fed7aa 1px, transparent 1px);
             background-size: 20px 20px;
         }
         h1, h2, h3 { font-family: 'Playfair Display', serif; }
         
-        /* ✅ FIX 2: Force Font on Card for Screenshot */
+        /* Force font on the card specifically */
         #entry-card, #entry-card * {
-            font-family: 'Noto Sans Devanagari', sans-serif !important;
+            font-family: 'Noto Sans Devanagari', 'Mangal', 'Nirmala UI', sans-serif !important;
         }
-        
+
         .ticket-edge-top {
             background-image: radial-gradient(circle at 10px top, transparent 10px, #ffffff 10px);
             background-position: -10px top;
@@ -44,22 +44,12 @@
             </svg>
         </button>
 
-        <div class="pt-10 pb-8 text-center bg-orange-50/80 border-b border-orange-100">
+        <div class="pt-12 pb-8 text-center bg-orange-50/80 border-b border-orange-100">
             <div class="flex flex-col items-center justify-center">
-                <div class="mb-3 text-orange-600">
-                    <svg width="80" height="80" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M50 20 C60 5 80 20 80 40 C80 60 50 80 50 80 C50 80 20 60 20 40 C20 20 40 5 50 20 Z" fill="#ea580c" opacity="0.8"/>
-                        <path d="M50 25 C55 15 70 25 70 40 C70 55 50 70 50 70 C50 70 30 55 30 40 C30 25 45 15 50 25 Z" fill="#fff7ed"/>
-                        <path d="M48 35 L48 60 M52 35 L52 60" stroke="#ea580c" stroke-width="2"/>
-                        <path d="M48 60 Q50 65 52 60" stroke="#ea580c" stroke-width="2" fill="none"/>
-                        <path d="M50 30 L50 35" stroke="#ea580c" stroke-width="2"/>
-                    </svg>
-                </div>
-
-                <h1 class="text-4xl font-extrabold text-orange-900 tracking-wide leading-tight mb-1">इस्कॉन उज्जैन</h1>
-                <h2 class="text-xl font-bold text-orange-700 uppercase tracking-wider mt-1 mb-2 border-b-2 border-orange-200 inline-block pb-1">ISKCON UJJAIN TEMPLE PASS</h2>
+                <h1 class="text-4xl font-extrabold text-orange-900 tracking-wide leading-tight mb-2">इस्कॉन उज्जैन</h1>
+                <h2 class="text-xl font-bold text-orange-700 uppercase tracking-wider border-b-2 border-orange-200 inline-block pb-1">ISKCON UJJAIN TEMPLE PASS</h2>
             </div>
-            <p class="text-[10px] font-medium text-orange-600 uppercase tracking-widest opacity-80 leading-relaxed mt-3">Founder Acharya: His Divine Grace<br>A.C. Bhaktivedanta Swami Prabhupada</p>
+            <p class="text-[10px] font-medium text-orange-600 uppercase tracking-widest opacity-80 leading-relaxed mt-4">Founder Acharya: His Divine Grace<br>A.C. Bhaktivedanta Swami Prabhupada</p>
         </div>
 
         <div class="p-6 md:p-8">
@@ -127,7 +117,10 @@
                     </div>
                     <div class="bg-orange-50 p-2 text-center border-t border-orange-100"><p class="text-[10px] uppercase text-orange-400 font-bold">Pass ID</p><p id="card-user-id" class="text-sm font-mono text-orange-800 font-bold uppercase tracking-wider"></p></div>
                 </div>
-                <div class="space-y-3"><button onclick="downloadCard()" class="w-full bg-green-600 text-white py-3 rounded-lg font-bold shadow hover:bg-green-700 flex items-center justify-center gap-2">Download</button><button onclick="renderFamilyScreen()" class="w-full text-orange-700 bg-orange-50 border border-orange-200 py-3 rounded-lg text-sm font-bold hover:bg-orange-100">+ Add Person</button></div>
+                <div class="space-y-3">
+                    <button id="download-btn" onclick="downloadCard()" class="w-full bg-green-600 text-white py-3 rounded-lg font-bold shadow hover:bg-green-700 flex items-center justify-center gap-2">Download</button>
+                    <button onclick="renderFamilyScreen()" class="w-full text-orange-700 bg-orange-50 border border-orange-200 py-3 rounded-lg text-sm font-bold hover:bg-orange-100">+ Add Person</button>
+                </div>
             </div>
 
             <div id="admin-dashboard-section" class="hidden">
@@ -167,7 +160,6 @@
         import { getAuth, signInAnonymously, onAuthStateChanged, signOut, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, onSnapshot, collection, addDoc, getDocs, writeBatch, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         
-        // CONFIG: entrycard-1a28a
         const firebaseConfig = {
             apiKey: "AIzaSyBOc6EeIc59S6COb80NJfYyl3GdRiI2H6k",
             authDomain: "entrycard-1a28a.firebaseapp.com",
@@ -339,19 +331,14 @@
             const t = document.getElementById('attendee-list'); 
             const selectedDate = document.getElementById('admin-date-filter').value; 
             t.innerHTML = '<tr><td class="p-4 text-center">Loading...</td></tr>';
-            
             try {
                 const s = await getDocs(collection(db, `artifacts/${firebaseConfig.projectId}/public/data/attendees`));
                 currentViewData = [];
                 s.forEach(doc => {
                     const d = doc.data();
                     const rowDate = getLocalDateString(d.timestamp); 
-                    
-                    if (rowDate === selectedDate) {
-                        currentViewData.push(d);
-                    }
+                    if (rowDate === selectedDate) currentViewData.push(d);
                 });
-
                 currentViewData.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
                 renderTable(currentViewData);
             } catch { t.innerHTML = '<tr><td>Error loading data</td></tr>'; }
@@ -393,11 +380,21 @@
             const a = document.createElement('a'); a.href=u; a.download=`Data_${document.getElementById('admin-date-filter').value}.csv`; a.click();
         }
 
-        // ✅ SCALE 2 FIX FOR MOBILE
+        // ✅ FIXED: DELAY FOR MOBILE HINDI FONT LOADING
         window.downloadCard = async function() {
+            const btn = document.getElementById('download-btn');
+            btn.innerText = "Generating...";
+            btn.disabled = true;
+
+            // Wait 500ms to allow mobile fonts to settle
+            await new Promise(resolve => setTimeout(resolve, 500));
+
             const c = document.getElementById('entry-card');
             const canvas = await html2canvas(c, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
             const link = document.createElement('a'); link.href = canvas.toDataURL("image/png"); link.download = `ISKCON_Pass.png`; link.click();
+
+            btn.innerText = "Download";
+            btn.disabled = false;
         };
 
         window.toggleRegistrationStatus = async () => { await setDoc(doc(db, `artifacts/${firebaseConfig.projectId}/config/settings`), {isRegistrationOpen:!isRegistrationOpen}, {merge:true}); };
