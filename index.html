@@ -11,7 +11,6 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Force Hindi Fonts */
         body { 
             font-family: 'Noto Sans Devanagari', 'Mangal', sans-serif !important; 
             background-color: #fff7ed;
@@ -20,7 +19,6 @@
         }
         h1, h2, h3 { font-family: 'Playfair Display', serif; }
         
-        /* Force Font on Card */
         #entry-card, #entry-card * {
             font-family: 'Noto Sans Devanagari', sans-serif !important;
         }
@@ -117,7 +115,10 @@
                     </div>
                     <div class="bg-orange-50 p-2 text-center border-t border-orange-100"><p class="text-[10px] uppercase text-orange-400 font-bold">Pass ID</p><p id="card-user-id" class="text-sm font-mono text-orange-800 font-bold uppercase tracking-wider"></p></div>
                 </div>
-                <div class="space-y-3"><button onclick="downloadCard()" class="w-full bg-green-600 text-white py-3 rounded-lg font-bold shadow hover:bg-green-700 flex items-center justify-center gap-2">Download</button><button onclick="renderFamilyScreen()" class="w-full text-orange-700 bg-orange-50 border border-orange-200 py-3 rounded-lg text-sm font-bold hover:bg-orange-100">+ Add Person</button></div>
+                <div class="space-y-3">
+                    <button id="download-btn" onclick="downloadCard()" class="w-full bg-green-600 text-white py-3 rounded-lg font-bold shadow hover:bg-green-700 flex items-center justify-center gap-2">Download</button>
+                    <button onclick="renderFamilyScreen()" class="w-full text-orange-700 bg-orange-50 border border-orange-200 py-3 rounded-lg text-sm font-bold hover:bg-orange-100">+ Add Person</button>
+                </div>
             </div>
 
             <div id="admin-dashboard-section" class="hidden">
@@ -138,7 +139,13 @@
                         </div>
                     </div>
 
-                    <div class="flex gap-3"><button onclick="exportToCSV()" class="flex-1 bg-white text-orange-800 py-2.5 rounded-lg text-xs font-bold shadow-sm border border-orange-200 hover:bg-orange-100">Excel Export</button><button onclick="clearAllData()" class="flex-1 bg-white text-red-600 py-2.5 rounded-lg text-xs font-bold shadow-sm border border-red-200 hover:bg-red-50">Clear Data</button></div>
+                    <div class="flex gap-3">
+                        <button onclick="exportToExcel()" class="flex-1 bg-green-600 text-white py-2.5 rounded-lg text-xs font-bold shadow-sm border border-green-700 hover:bg-green-700 flex items-center justify-center gap-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                            Download Excel
+                        </button>
+                        <button onclick="clearAllData()" class="flex-1 bg-white text-red-600 py-2.5 rounded-lg text-xs font-bold shadow-sm border border-red-200 hover:bg-red-50">Clear Data</button>
+                    </div>
                 </div>
                 <div class="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm"><div class="max-h-80 overflow-y-auto"><table class="w-full text-left text-sm"><thead class="bg-orange-50/80 sticky top-0 text-orange-800 text-xs uppercase font-bold"><tr><th class="p-3">Name</th><th class="p-3">Phone</th><th class="p-3">Time</th></tr></thead><tbody id="attendee-list" class="divide-y divide-orange-50"></tbody></table></div></div>
             </div>
@@ -365,23 +372,66 @@
             }
         }
 
-        // ✅ FIXED: CSV DATA EXPORT WITH BOM FOR MOBILE EXCEL
-        window.exportToCSV = async function() {
+        // ✅ FIXED: EXCEL COMPATIBLE EXPORT (FOR HINDI SUPPORT)
+        window.exportToExcel = async function() {
             if (currentViewData.length === 0) { alert("No data to export."); return; }
-            let csv = "Name,Contact,Address,Devotee,Time\n";
-            currentViewData.forEach(r => { 
-                const clean = (val) => (val || "").replace(/"/g, '""');
-                csv += `"${clean(r.name)}","${clean(r.contact)}","${clean(r.homeAddress)}","${clean(r.devotee)}","${r.timestamp}"\n`; 
+            
+            // We use HTML Table syntax for Excel to guarantee UTF-8 encoding is respected
+            let excelContent = `
+                <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+                <head>
+                    <meta charset="UTF-8"> 
+                    <style>
+                        table { border-collapse: collapse; width: 100%; }
+                        th, td { border: 1px solid #000; padding: 5px; text-align: left; }
+                    </style>
+                </head>
+                <body>
+                    <table>
+                        <thead>
+                            <tr style="background-color: #f0f0f0;">
+                                <th>Name</th>
+                                <th>Contact</th>
+                                <th>Address</th>
+                                <th>Devotee</th>
+                                <th>Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            currentViewData.forEach(r => {
+                excelContent += `
+                    <tr>
+                        <td>${r.name || ''}</td>
+                        <td style="mso-number-format:'\@'">${r.contact || ''}</td>
+                        <td>${r.homeAddress || ''}</td>
+                        <td>${r.devotee || ''}</td>
+                        <td>${new Date(r.timestamp).toLocaleString()}</td>
+                    </tr>
+                `;
             });
-            const b = new Blob(["\uFEFF"+csv], { type: 'text/csv;charset=utf-8;' });
-            const u = URL.createObjectURL(b);
-            const a = document.createElement('a'); a.href=u; a.download=`Data_${document.getElementById('admin-date-filter').value}.csv`; a.click();
+
+            excelContent += `</tbody></table></body></html>`;
+
+            const blob = new Blob([excelContent], { type: "application/vnd.ms-excel" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Data_${document.getElementById('admin-date-filter').value}.xls`; // Note: .xls extension
+            a.click();
         }
 
         window.downloadCard = async function() {
+            const btn = document.getElementById('download-btn');
+            btn.innerText = "Generating...";
+            btn.disabled = true;
+            await new Promise(resolve => setTimeout(resolve, 500));
             const c = document.getElementById('entry-card');
             const canvas = await html2canvas(c, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
             const link = document.createElement('a'); link.href = canvas.toDataURL("image/png"); link.download = `ISKCON_Pass.png`; link.click();
+            btn.innerText = "Download";
+            btn.disabled = false;
         };
 
         window.toggleRegistrationStatus = async () => { await setDoc(doc(db, `artifacts/${firebaseConfig.projectId}/config/settings`), {isRegistrationOpen:!isRegistrationOpen}, {merge:true}); };
