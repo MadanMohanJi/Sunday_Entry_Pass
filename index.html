@@ -4,10 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ISKCON UJJAIN TEMPLE PASS</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;500;700&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Noto+Sans+Devanagari:wght@400;500;700&display=swap');
-        
+        /* Apply Hindi Font Globally */
         body { 
             font-family: 'Noto Sans Devanagari', sans-serif; 
             background-color: #fff7ed;
@@ -15,6 +19,12 @@
             background-size: 20px 20px;
         }
         h1, h2, h3 { font-family: 'Playfair Display', serif; }
+        
+        /* ✅ FIX 2: Force Font on Card for Screenshot */
+        #entry-card, #entry-card * {
+            font-family: 'Noto Sans Devanagari', sans-serif !important;
+        }
+        
         .ticket-edge-top {
             background-image: radial-gradient(circle at 10px top, transparent 10px, #ffffff 10px);
             background-position: -10px top;
@@ -34,7 +44,202 @@
             </svg>
         </button>
 
-        <div class="pt-12 pb-8 text-center bg-orange-50/80 border-b border-orange-100">
+        <div class="pt-10 pb-8 text-center bg-orange-50/80 border-b border-orange-100">
+            <div class="flex flex-col items-center justify-center">
+                <div class="mb-3 text-orange-600">
+                    <svg width="80" height="80" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M50 20 C60 5 80 20 80 40 C80 60 50 80 50 80 C50 80 20 60 20 40 C20 20 40 5 50 20 Z" fill="#ea580c" opacity="0.8"/>
+                        <path d="M50 25 C55 15 70 25 70 40 C70 55 50 70 50 70 C50 70 30 55 30 40 C30 25 45 15 50 25 Z" fill="#fff7ed"/>
+                        <path d="M48 35 L48 60 M52 35 L52 60" stroke="#ea580c" stroke-width="2"/>
+                        <path d="M48 60 Q50 65 52 60" stroke="#ea580c" stroke-width="2" fill="none"/>
+                        <path d="M50 30 L50 35" stroke="#ea580c" stroke-width="2"/>
+                    </svg>
+                </div>
+
+                <h1 class="text-4xl font-extrabold text-orange-900 tracking-wide leading-tight mb-1">इस्कॉन उज्जैन</h1>
+                <h2 class="text-xl font-bold text-orange-700 uppercase tracking-wider mt-1 mb-2 border-b-2 border-orange-200 inline-block pb-1">ISKCON UJJAIN TEMPLE PASS</h2>
+            </div>
+            <p class="text-[10px] font-medium text-orange-600 uppercase tracking-widest opacity-80 leading-relaxed mt-3">Founder Acharya: His Divine Grace<br>A.C. Bhaktivedanta Swami Prabhupada</p>
+        </div>
+
+        <div class="p-6 md:p-8">
+            <div id="loading-state" class="text-center py-6">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto mb-2"></div>
+                <p class="text-sm text-gray-500">Connecting...</p>
+                <p id="loading-error" class="text-xs text-red-500 mt-2 hidden"></p>
+            </div>
+
+            <div id="closed-section" class="hidden text-center py-6 bg-red-50 rounded-lg border border-red-100">
+                <p class="text-red-800 font-bold">🙏 क्षमा करें, पंजीकरण बंद है</p>
+                <button onclick="renderAdminLogin()" class="mt-4 text-xs text-gray-400 underline">Sevak Login</button>
+            </div>
+
+            <div id="family-section" class="hidden">
+                <div class="flex justify-between items-center mb-4 border-b border-orange-100 pb-2">
+                    <h2 class="text-lg font-bold text-gray-800">Saved Devotees</h2>
+                    <button onclick="clearFamilyData()" class="text-xs text-red-400 hover:text-red-600">Clear</button>
+                </div>
+                <div id="family-list" class="space-y-3 mb-6 max-h-[40vh] overflow-y-auto pr-1"></div>
+                <button onclick="showNewForm()" class="w-full py-3 bg-orange-50 border border-orange-200 text-orange-800 rounded-lg text-sm font-bold hover:bg-orange-100 transition flex items-center justify-center gap-2">
+                    <span>+</span> नया पास बनाएँ (New Entry)
+                </button>
+                <div class="text-center mt-6"><button onclick="renderAdminLogin()" class="text-xs text-gray-300">Admin</button></div>
+            </div>
+
+            <div id="form-section" class="hidden">
+                <div class="flex items-center mb-6">
+                    <button onclick="renderFamilyScreen()" id="back-to-family-btn" class="mr-3 text-orange-500 hover:text-orange-700 hidden">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+                    </button>
+                    <h2 class="text-xl font-bold text-gray-800">अतिथि पंजीकरण</h2>
+                </div>
+                <form id="registration-form" class="space-y-5" autocomplete="off">
+                    <div class="group"><label class="block text-xs font-bold text-orange-800 uppercase mb-1">पूरा नाम (Full Name)</label><input type="text" id="name" required placeholder="अपना नाम लिखें" class="w-full p-3 bg-orange-50/50 border-b-2 border-orange-200 focus:border-orange-600 outline-none transition rounded-t-md placeholder-gray-400 text-gray-800"></div>
+                    <div class="group"><label class="block text-xs font-bold text-orange-800 uppercase mb-1">मोबाइल नंबर (Mobile)</label><input type="tel" id="contact" required maxlength="10" placeholder="10 अंकों का नंबर" class="w-full p-3 bg-orange-50/50 border-b-2 border-orange-200 focus:border-orange-600 outline-none transition rounded-t-md placeholder-gray-400 text-gray-800"></div>
+                    <div class="group"><label class="block text-xs font-bold text-orange-800 uppercase mb-1">घर का पता (Address)</label><input type="text" id="home_address" required placeholder="अपना पता लिखें" class="w-full p-3 bg-orange-50/50 border-b-2 border-orange-200 focus:border-orange-600 outline-none transition rounded-t-md placeholder-gray-400 text-gray-800"></div>
+                    <div class="group"><label class="block text-xs font-bold text-orange-800 uppercase mb-1">मंदिर में किससे जुड़े हैं?</label><input type="text" id="devotee" required placeholder="Eg. HG Prabhu Ji Name" class="w-full p-3 bg-orange-50/50 border-b-2 border-orange-200 focus:border-orange-600 outline-none transition rounded-t-md placeholder-gray-400 text-gray-800"></div>
+                    <button type="submit" id="submit-button" class="w-full mt-4 bg-orange-700 text-white py-3.5 rounded-lg font-bold shadow-md hover:bg-orange-800 transition-transform active:scale-95 flex items-center justify-center">हरे कृष्णा (Get Pass)</button>
+                </form>
+            </div>
+
+            <div id="card-section" class="hidden">
+                <div class="text-center mb-4">
+                    <div class="bg-green-100 text-green-800 px-4 py-1 rounded-full text-sm font-bold inline-flex items-center mb-2">✓ Pass Generated!</div>
+                    <h2 class="text-lg font-bold text-gray-800">कृपया गेट पर दिखाएं</h2>
+                </div>
+                <div id="entry-card" class="w-full bg-white border-2 border-orange-500 rounded-xl overflow-hidden shadow-xl relative mb-6">
+                    <div class="ticket-edge-top absolute top-0 left-0 w-full z-10"></div>
+                    <div class="bg-white pt-6 pb-2 text-center border-b border-orange-100 relative z-0 mt-2">
+                        <h3 class="text-2xl font-extrabold text-orange-800" style="font-family: 'Playfair Display', serif;">ISKCON UJJAIN</h3>
+                        <p class="text-xs font-bold text-orange-600 uppercase tracking-widest">TEMPLE ENTRY PASS</p>
+                        <div class="mt-3 bg-orange-50 py-2 border-y border-orange-100">
+                            <p id="card-timestamp" class="text-xl font-bold text-orange-800 font-mono"></p>
+                        </div>
+                    </div>
+                    <div class="p-6 space-y-4 relative">
+                        <div><p class="text-[10px] uppercase text-orange-400 font-bold tracking-wider">Visitor Name</p><p id="card-name" class="text-3xl font-bold text-gray-900 leading-tight font-serif"></p></div>
+                        <div class="border-t border-dashed border-orange-200"></div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><p class="text-[10px] uppercase text-orange-400 font-bold tracking-wider">Mobile</p><p id="card-contact" class="text-sm font-semibold text-gray-800 font-mono"></p></div>
+                            <div><p class="text-[10px] uppercase text-orange-400 font-bold tracking-wider">Connected With</p><p id="card-devotee" class="text-sm font-bold text-orange-700"></p></div>
+                        </div>
+                        <div><p class="text-[10px] uppercase text-orange-400 font-bold tracking-wider">Address</p><p id="card-home-address" class="text-xs font-medium text-gray-600 leading-snug"></p></div>
+                    </div>
+                    <div class="bg-orange-50 p-2 text-center border-t border-orange-100"><p class="text-[10px] uppercase text-orange-400 font-bold">Pass ID</p><p id="card-user-id" class="text-sm font-mono text-orange-800 font-bold uppercase tracking-wider"></p></div>
+                </div>
+                <div class="space-y-3"><button onclick="downloadCard()" class="w-full bg-green-600 text-white py-3 rounded-lg font-bold shadow hover:bg-green-700 flex items-center justify-center gap-2">Download</button><button onclick="renderFamilyScreen()" class="w-full text-orange-700 bg-orange-50 border border-orange-200 py-3 rounded-lg text-sm font-bold hover:bg-orange-100">+ Add Person</button></div>
+            </div>
+
+            <div id="admin-dashboard-section" class="hidden">
+                <div class="flex justify-between items-center mb-4 pb-2 border-b border-gray-100"><h2 class="text-lg font-bold text-gray-800">Admin Seva Panel</h2><button onclick="handleSignOut()" class="text-xs text-red-500 font-bold bg-red-50 px-3 py-1 rounded-full hover:bg-red-100">LOGOUT</button></div>
+                
+                <div class="bg-orange-50 rounded-xl p-4 mb-4 border border-orange-200 shadow-sm">
+                    <div class="flex items-center justify-between mb-4 bg-white p-3 rounded-lg border border-orange-100">
+                        <span class="text-sm font-bold text-orange-900">Registration Status</span>
+                        <button id="reg-toggle-btn" onclick="toggleRegistrationStatus()" class="px-4 py-1.5 rounded-full text-xs font-extrabold transition shadow-sm"></button>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-xs font-bold text-orange-800 mb-1">Select Date:</label>
+                        <div class="flex gap-2">
+                            <input type="date" id="admin-date-filter" class="w-full p-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300">
+                            <button onclick="fetchAttendees()" class="bg-orange-600 text-white px-3 py-2 rounded-lg text-xs font-bold hover:bg-orange-700 shadow">Filter</button>
+                            <button onclick="fetchAllData()" class="bg-gray-700 text-white px-3 py-2 rounded-lg text-xs font-bold hover:bg-gray-900 shadow">Show All</button>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-3"><button onclick="exportToCSV()" class="flex-1 bg-white text-orange-800 py-2.5 rounded-lg text-xs font-bold shadow-sm border border-orange-200 hover:bg-orange-100">Excel Export</button><button onclick="clearAllData()" class="flex-1 bg-white text-red-600 py-2.5 rounded-lg text-xs font-bold shadow-sm border border-red-200 hover:bg-red-50">Clear Data</button></div>
+                </div>
+                <div class="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm"><div class="max-h-80 overflow-y-auto"><table class="w-full text-left text-sm"><thead class="bg-orange-50/80 sticky top-0 text-orange-800 text-xs uppercase font-bold"><tr><th class="p-3">Name</th><th class="p-3">Phone</th><th class="p-3">Time</th></tr></thead><tbody id="attendee-list" class="divide-y divide-orange-50"></tbody></table></div></div>
+            </div>
+            
+            <div id="admin-login-section" class="hidden text-center">
+                <h2 class="text-xl font-bold text-gray-800 mb-6 font-serif mt-8">Sevak Login Area</h2>
+                <form id="admin-login-form" class="space-y-4"><input type="email" id="admin-email" required placeholder="Email ID" class="w-full p-3 bg-orange-50/50 border-2 border-orange-100 rounded-lg outline-none focus:border-orange-400"><input type="password" id="admin-password" required placeholder="Password" class="w-full p-3 bg-orange-50/50 border-2 border-orange-100 rounded-lg outline-none focus:border-orange-400"><button type="submit" class="w-full bg-orange-800 text-white py-3 rounded-lg font-bold hover:bg-orange-900 shadow-md">Login Securely</button></form>
+                <button onclick="renderForm()" class="mt-6 text-sm text-gray-400 hover:text-orange-700 underline transition">Cancel & Go Back</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signOut, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot, collection, addDoc, getDocs, writeBatch, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        
+        // CONFIG: entrycard-1a28a
+        const firebaseConfig = {
+            apiKey: "AIzaSyBOc6EeIc59S6COb80NJfYyl3GdRiI2H6k",
+            authDomain: "entrycard-1a28a.firebaseapp.com",
+            projectId: "entrycard-1a28a",
+            storageBucket: "entrycard-1a28a.firebasestorage.app",
+            messagingSenderId: "571342230056",
+            appId: "1:571342230056:web:de9f4c19cd820cee6cdb1d",
+            measurementId: "G-MQWXKCQ85H"
+        };
+        const ADMIN_EMAILS = ["shivesh211204@gmail.com", "iskcon.sunday.feast@gmail.com"];
+
+        let app, db, auth, userId = null, isRegistrationOpen = true;
+        const views = { loading: document.getElementById('loading-state'), closed: document.getElementById('closed-section'), family: document.getElementById('family-section'), form: document.getElementById('form-section'), card: document.getElementById('card-section'), admin: document.getElementById('admin-dashboard-section'), login: document.getElementById('admin-login-section') };
+        const errorMsg = document.getElementById('loading-error');
+        let currentViewData = [];
+
+        function getFamilyProfiles() { try { return JSON.parse(localStorage.getItem('iskcon_family_list_v8') || '[]'); } catch { return []; } }
+        function saveProfileToMemory(name, contact, homeAddress, devotee) {
+            let profiles = getFamilyProfiles();
+            profiles = profiles.filter(p => p.name.toLowerCase() !== name.trim().toLowerCase());
+            profiles.unshift({ name: name.trim(), contact: contact.trim(), homeAddress: homeAddress.trim(), devotee: devotee.trim() });
+            if(profiles.length > 8) profiles.pop();
+            localStorage.setItem('iskcon_family_list_v8', JSON.stringify(profiles));
+        }
+        window.clearFamilyData = function() { if(confirm("Clear saved list?")) { localStorage.removeItem('iskcon_family_list_v8'); renderFamilyScreen(); } };
+        function hideAll() { Object.values(views).forEach(el => el.classList.add('hidden')); }
+
+        window.renderFamilyScreen = function() {
+            hideAll(); if(!isRegistrationOpen) { views.closed.classList.remove('hidden'); return; }
+            const profiles = getFamilyProfiles();
+            if(profiles.length === 0) { showNewForm(); } else {
+                document.getElementById('family-list').innerHTML = profiles.map((p, index) => `
+                    <div onclick="quickGenerate('${index}')" class="bg-white p-4 rounded-xl border-2 border-orange-50 flex justify-between items-center cursor-pointer hover:border-orange-300 transition shadow-sm group relative overflow-hidden">
+                        <div class="absolute right-0 top-0 h-full w-1 bg-orange-200 group-hover:bg-orange-500 transition-all"></div>
+                        <div class="overflow-hidden pl-2">
+                            <p class="font-bold text-gray-800 text-lg group-hover:text-orange-800 font-serif">${p.name}</p>
+                            <p class="text-xs text-gray-500 font-medium">Linked: <span class="text-orange-700">${p.devotee}</span></p>
+                        </div>
+                        <div class="bg-orange-100 text-orange-600 rounded-full p-2 shadow-inner group-hover:bg-orange-600 group-hover:text-white transition mr-2">
+                           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+                        </div>
+                    </div>`).join('');
+                views.family.classList.remove('hidden');
+            }
+        };
+
+        window.showNewForm = function() {
+            hideAll(); if(!isRegistrationOpen) { views.closed.classList.remove('hidden'); return; }
+            const profiles = getFamilyProfiles();
+            document.getElementById('back-to-family-btn').classList.toggle('hidden', profiles.length === 0);
+            
+            if(profiles.length > 0) {
+                document.getElementById('home_address').value = profiles[0].homeAddress;
+                document.getElementById('devotee').value = profiles[0].devotee;
+                document.getElementById('name').value = "";
+                document.getElementById('contact').value = ""; 
+            } else { 
+                document.getElementById('registration-form').reset(); 
+            }
+            views.form.classList.remove('hidden');
+        };
+
+        window.renderAdminLogin = function() { hideAll(); views.login.classList.remove('hidden'); };
+        window.renderForm = () => renderFamilyScreen();
+
+        window.quickGenerate = async function(index) {
+            const p = getFamilyProfiles()[index]; if(p) await generateTicket(p.name, p.contact, p.homeAddress, p.devotee);
+        };
+
+        function getLocalDateString(isoDate) {
+            if(!isoDate) return "";
+               <div class="pt-12 pb-8 text-center bg-orange-50/80 border-b border-orange-100">
             <div class="flex flex-col items-center justify-center">
                 <h1 class="text-4xl font-extrabold text-orange-900 tracking-wide leading-tight mb-2">इस्कॉन उज्जैन</h1>
                 <h2 class="text-xl font-bold text-orange-700 uppercase tracking-wider border-b-2 border-orange-200 inline-block pb-1">ISKCON UJJAIN TEMPLE PASS</h2>
