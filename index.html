@@ -28,18 +28,18 @@
 
     <div id="app-container" class="w-full max-w-md bg-white shadow-2xl rounded-xl overflow-hidden border-t-4 border-orange-600 relative">
         
+        <!-- VISIBLE ADMIN BUTTON -->
         <button onclick="renderAdminLogin()" class="absolute top-4 right-4 z-50 p-2 bg-white text-orange-700 rounded-full shadow-md border border-orange-200 hover:bg-orange-100 transition-all transform hover:scale-110" title="Admin Login">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
         </button>
 
+        <!-- Header -->
         <div class="pt-10 pb-8 text-center bg-orange-50/80 border-b border-orange-100">
             <div class="flex flex-col items-center justify-center">
                 <h1 class="text-4xl font-extrabold text-orange-900 tracking-wide leading-tight mb-1">इस्कॉन उज्जैन</h1>
-                
                 <h2 class="text-xl font-bold text-orange-700 uppercase tracking-wider mt-1 mb-2 border-b-2 border-orange-200 inline-block pb-1">Sunday Entry Pass</h2>
-            
             </div>
             <p class="text-[10px] font-medium text-orange-600 uppercase tracking-widest opacity-80 leading-relaxed mt-3">Founder Acharya: His Divine Grace<br>A.C. Bhaktivedanta Swami Prabhupada</p>
         </div>
@@ -78,6 +78,7 @@
                     <div class="group"><label class="block text-xs font-bold text-orange-800 uppercase mb-1">पूरा नाम (Full Name)</label><input type="text" id="name" required placeholder="अपना नाम लिखें" class="w-full p-3 bg-orange-50/50 border-b-2 border-orange-200 focus:border-orange-600 outline-none transition rounded-t-md placeholder-gray-400 text-gray-800"></div>
                     <div class="group"><label class="block text-xs font-bold text-orange-800 uppercase mb-1">मोबाइल नंबर (Mobile)</label><input type="tel" id="contact" required maxlength="10" placeholder="10 अंकों का नंबर" class="w-full p-3 bg-orange-50/50 border-b-2 border-orange-200 focus:border-orange-600 outline-none transition rounded-t-md placeholder-gray-400 text-gray-800"></div>
                     
+                    <!-- Auto-filled Fields -->
                     <div class="group"><label class="block text-xs font-bold text-orange-800 uppercase mb-1">घर का पता (Address)</label><input type="text" id="home_address" required placeholder="अपना पता लिखें" class="w-full p-3 bg-orange-50/50 border-b-2 border-orange-200 focus:border-orange-600 outline-none transition rounded-t-md placeholder-gray-400 text-gray-800"></div>
                     <div class="group"><label class="block text-xs font-bold text-orange-800 uppercase mb-1">मंदिर में किससे जुड़े हैं?</label><input type="text" id="devotee" required placeholder="Eg. HG Prabhu Ji Name" class="w-full p-3 bg-orange-50/50 border-b-2 border-orange-200 focus:border-orange-600 outline-none transition rounded-t-md placeholder-gray-400 text-gray-800"></div>
                     <button type="submit" id="submit-button" class="w-full mt-4 bg-orange-700 text-white py-3.5 rounded-lg font-bold shadow-md hover:bg-orange-800 transition-transform active:scale-95 flex items-center justify-center">हरे कृष्णा (Get Pass)</button>
@@ -93,9 +94,7 @@
                     <div class="ticket-edge-top absolute top-0 left-0 w-full z-10"></div>
                     <div class="bg-white pt-6 pb-2 text-center border-b border-orange-100 relative z-0 mt-2">
                         <h3 class="text-2xl font-extrabold text-orange-800 tracking-wide mt-2" style="font-family: 'Playfair Display', serif;">ISKCON UJJAIN</h3>
-                        
                         <p class="text-xs font-bold text-orange-600 uppercase tracking-widest">Sunday Entry Pass</p>
-                        
                         <div class="mt-3 bg-orange-50 py-2 border-y border-orange-100">
                             <p id="card-timestamp" class="text-xl font-bold text-orange-800 font-mono"></p>
                         </div>
@@ -114,12 +113,30 @@
                 <div class="space-y-3"><button onclick="downloadCard()" class="w-full bg-green-600 text-white py-3 rounded-lg font-bold shadow hover:bg-green-700 flex items-center justify-center gap-2">Download</button><button onclick="renderFamilyScreen()" class="w-full text-orange-700 bg-orange-50 border border-orange-200 py-3 rounded-lg text-sm font-bold hover:bg-orange-100">+ Add Person</button></div>
             </div>
 
+            <!-- ADMIN DASHBOARD (DATE FILTER ADDED) -->
             <div id="admin-dashboard-section" class="hidden">
                 <div class="flex justify-between items-center mb-4 pb-2 border-b border-gray-100"><h2 class="text-lg font-bold text-gray-800">Admin Seva Panel</h2><button onclick="handleSignOut()" class="text-xs text-red-500 font-bold bg-red-50 px-3 py-1 rounded-full hover:bg-red-100">LOGOUT</button></div>
+                
+                <!-- Status & Toggle -->
                 <div class="bg-orange-50 rounded-xl p-4 mb-4 border border-orange-200 shadow-sm">
-                    <div class="flex items-center justify-between mb-4 bg-white p-3 rounded-lg border border-orange-100"><span class="text-sm font-bold text-orange-900">Registration Status</span><button id="reg-toggle-btn" onclick="toggleRegistrationStatus()" class="px-4 py-1.5 rounded-full text-xs font-extrabold transition shadow-sm"></button></div>
+                    <div class="flex items-center justify-between mb-4 bg-white p-3 rounded-lg border border-orange-100">
+                        <span class="text-sm font-bold text-orange-900">Registration Status</span>
+                        <button id="reg-toggle-btn" onclick="toggleRegistrationStatus()" class="px-4 py-1.5 rounded-full text-xs font-extrabold transition shadow-sm"></button>
+                    </div>
+                    
+                    <!-- NEW: DATE FILTER -->
+                    <div class="mb-4">
+                        <label class="block text-xs font-bold text-orange-800 mb-1">Select Date to View:</label>
+                        <div class="flex gap-2">
+                            <input type="date" id="admin-date-filter" class="w-full p-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300" onchange="fetchAttendees()">
+                            <button onclick="fetchAttendees()" class="bg-orange-600 text-white px-3 py-2 rounded-lg text-xs font-bold hover:bg-orange-700">Go</button>
+                        </div>
+                    </div>
+
                     <div class="flex gap-3"><button onclick="exportToCSV()" class="flex-1 bg-white text-orange-800 py-2.5 rounded-lg text-xs font-bold shadow-sm border border-orange-200 hover:bg-orange-100">Excel Export</button><button onclick="clearAllData()" class="flex-1 bg-white text-red-600 py-2.5 rounded-lg text-xs font-bold shadow-sm border border-red-200 hover:bg-red-50">Clear Data</button></div>
                 </div>
+                
+                <!-- Table -->
                 <div class="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm"><div class="max-h-80 overflow-y-auto"><table class="w-full text-left text-sm"><thead class="bg-orange-50/80 sticky top-0 text-orange-800 text-xs uppercase font-bold"><tr><th class="p-3">Name</th><th class="p-3">Phone</th><th class="p-3">Devotee</th></tr></thead><tbody id="attendee-list" class="divide-y divide-orange-50"></tbody></table></div></div>
             </div>
             
@@ -145,12 +162,14 @@
             messagingSenderId: "571342230056",
             appId: "1:571342230056:web:de9f4c19cd820cee6cdb1d",
             measurementId: "G-MQWXKCQ85H"
-        };
+};
         const ADMIN_EMAILS = ["shivesh211204@gmail.com", "iskcon.sunday.feast@gmail.com"];
 
         let app, db, auth, userId = null, isRegistrationOpen = true;
         const views = { loading: document.getElementById('loading-state'), closed: document.getElementById('closed-section'), family: document.getElementById('family-section'), form: document.getElementById('form-section'), card: document.getElementById('card-section'), admin: document.getElementById('admin-dashboard-section'), login: document.getElementById('admin-login-section') };
         const errorMsg = document.getElementById('loading-error');
+        // Store fetched data globally to filter easily for CSV
+        let currentViewData = [];
 
         function getFamilyProfiles() { try { return JSON.parse(localStorage.getItem('iskcon_family_list_v8') || '[]'); } catch { return []; } }
         function saveProfileToMemory(name, contact, homeAddress, devotee) {
@@ -182,7 +201,6 @@
             }
         };
 
-        // ✅ Updated: Clears both Name AND Contact
         window.showNewForm = function() {
             hideAll(); if(!isRegistrationOpen) { views.closed.classList.remove('hidden'); return; }
             const profiles = getFamilyProfiles();
@@ -214,7 +232,6 @@
             if(btn) { btn.disabled = true; btn.innerText = 'Verifying...'; }
             
             try {
-                // --- 100% FIXED DUPLICATE LOGIC ---
                 const todayStr = new Date().toISOString().split('T')[0]; 
                 let isDuplicate = false;
                 let existingTimestamp = new Date().toISOString();
@@ -233,7 +250,11 @@
 
                 if (!isDuplicate) {
                     const timestamp = new Date().toISOString();
-                    const data = { name: name.trim(), contact: contact.trim(), homeAddress: homeAddress.trim(), devotee: devotee.trim(), timestamp, userId };
+                    const data = { 
+                        name: name.trim(), contact: contact.trim(), homeAddress: homeAddress.trim(), devotee: devotee.trim(), 
+                        timestamp, userId,
+                        dateString: todayStr // Save simple date string for easy filtering
+                    };
                     await setDoc(doc(db, `artifacts/${firebaseConfig.projectId}/users/${userId}/registrations/entryCard`), data);
                     await addDoc(collection(db, `artifacts/${firebaseConfig.projectId}/public/data/attendees`), data);
                     existingTimestamp = timestamp;
@@ -281,7 +302,15 @@
 
             onAuthStateChanged(auth, async (user) => {
                 if (!user) { await signInAnonymously(auth); } 
-                else { userId = user.uid; if(ADMIN_EMAILS.includes(user.email)) { hideAll(); views.admin.classList.remove('hidden'); fetchAttendees(); } else { renderFamilyScreen(); } }
+                else { 
+                    userId = user.uid; 
+                    // Set default date to today for admin panel
+                    const today = new Date().toISOString().split('T')[0];
+                    document.getElementById('admin-date-filter').value = today;
+                    
+                    if(ADMIN_EMAILS.includes(user.email)) { hideAll(); views.admin.classList.remove('hidden'); fetchAttendees(); } 
+                    else { renderFamilyScreen(); } 
+                }
             });
         }
 
@@ -295,20 +324,55 @@
         window.handleSignOut = async () => { await signOut(auth); window.location.reload(); };
         document.getElementById('admin-login-form').addEventListener('submit', async(e)=>{ e.preventDefault(); try { await signInWithEmailAndPassword(auth, document.getElementById('admin-email').value, document.getElementById('admin-password').value); } catch { alert("Wrong email/password"); } });
 
+        // ✅ NEW: Filtered Fetch with Date Logic
         async function fetchAttendees() {
-            const t = document.getElementById('attendee-list'); t.innerHTML = '<tr><td class="p-4 text-center">Loading...</td></tr>';
+            const t = document.getElementById('attendee-list'); 
+            const selectedDate = document.getElementById('admin-date-filter').value; // "2025-12-25"
+            
+            t.innerHTML = '<tr><td class="p-4 text-center">Loading...</td></tr>';
+            
             try {
+                // To support large data without complex indexes, we fetch all and filter in JS (Client Side)
+                // Since this is for a Temple (~200-500 entries), this is safer and doesn't require index creation.
                 const s = await getDocs(collection(db, `artifacts/${firebaseConfig.projectId}/public/data/attendees`));
-                const d = []; s.forEach(doc => d.push(doc.data())); d.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
-                t.innerHTML = d.map(r => `<tr class="hover:bg-orange-50 border-b border-orange-100"><td class="p-3 font-bold">${r.name}</td><td class="p-3 text-xs">${r.contact}</td><td class="p-3 font-medium truncate max-w-[100px] text-orange-800">${r.devotee || r.address || '-'}</td></tr>`).join('');
+                currentViewData = [];
+                
+                s.forEach(doc => {
+                    const d = doc.data();
+                    // Fallback: If dateString not saved in old data, extract from timestamp
+                    const rowDate = d.dateString || new Date(d.timestamp).toISOString().split('T')[0];
+                    
+                    if (rowDate === selectedDate) {
+                        currentViewData.push(d);
+                    }
+                });
+
+                // Sort newest first
+                currentViewData.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
+                
+                if (currentViewData.length === 0) {
+                    t.innerHTML = '<tr><td class="p-4 text-center text-gray-400" colspan="3">No records found for this date.</td></tr>';
+                } else {
+                    t.innerHTML = currentViewData.map(r => `<tr class="hover:bg-orange-50 border-b border-orange-100"><td class="p-3 font-bold">${r.name}</td><td class="p-3 text-xs">${r.contact}</td><td class="p-3 font-medium truncate max-w-[100px] text-orange-800">${r.devotee || r.address || '-'}</td></tr>`).join('');
+                }
             } catch { t.innerHTML = '<tr><td>Error</td></tr>'; }
         }
 
+        // ✅ NEW: Export to CSV with BOM for Hindi Support
         window.exportToCSV = async function() {
-            const s = await getDocs(collection(db, `artifacts/${firebaseConfig.projectId}/public/data/attendees`));
-            let csv = "\uFEFFName,Contact,Address,Devotee,Time\n";
-            s.forEach(d => { const r = d.data(); csv += `"${r.name}","${r.contact}","${r.homeAddress||''}","${r.devotee||r.address}","${r.timestamp}"\n`; });
-            const b = new Blob([csv],{type:'text/csv;charset=utf-8;'}); const u = URL.createObjectURL(b); const a = document.createElement('a'); a.href=u; a.download='Data.csv'; a.click();
+            if (currentViewData.length === 0) { alert("No data to export for selected date."); return; }
+            
+            let csv = "Name,Contact,Address,Devotee,Time\n";
+            currentViewData.forEach(r => { 
+                // Escape quotes for CSV
+                const clean = (val) => (val || "").replace(/"/g, '""');
+                csv += `"${clean(r.name)}","${clean(r.contact)}","${clean(r.homeAddress)}","${clean(r.devotee)}","${r.timestamp}"\n`; 
+            });
+            
+            // Add BOM for UTF-8 (Hindi) Support in Excel
+            const b = new Blob(["\uFEFF"+csv], { type: 'text/csv;charset=utf-8;' });
+            const u = URL.createObjectURL(b);
+            const a = document.createElement('a'); a.href=u; a.download=`Data_${document.getElementById('admin-date-filter').value}.csv`; a.click();
         }
 
         window.clearAllData = async function() {
