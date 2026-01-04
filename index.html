@@ -88,7 +88,15 @@
                     <div class="group"><label class="block text-xs font-bold text-orange-800 uppercase mb-1">पूरा नाम (Full Name)</label><input type="text" id="name" required placeholder="अपना नाम लिखें" class="w-full p-3 bg-orange-50/50 border-b-2 border-orange-200 focus:border-orange-600 outline-none transition rounded-t-md placeholder-gray-400 text-gray-800"></div>
                     <div class="group"><label class="block text-xs font-bold text-orange-800 uppercase mb-1">मोबाइल नंबर (Mobile)</label><input type="tel" id="contact" required maxlength="10" placeholder="10 अंकों का नंबर" class="w-full p-3 bg-orange-50/50 border-b-2 border-orange-200 focus:border-orange-600 outline-none transition rounded-t-md placeholder-gray-400 text-gray-800"></div>
                     <div class="group"><label class="block text-xs font-bold text-orange-800 uppercase mb-1">घर का पता (Address)</label><input type="text" id="home_address" required placeholder="अपना पता लिखें" class="w-full p-3 bg-orange-50/50 border-b-2 border-orange-200 focus:border-orange-600 outline-none transition rounded-t-md placeholder-gray-400 text-gray-800"></div>
-                    <div class="group"><label class="block text-xs font-bold text-orange-800 uppercase mb-1">मंदिर में किससे जुड़े हैं?</label><input type="text" id="devotee" required placeholder="Eg. HG Prabhu Ji Name" class="w-full p-3 bg-orange-50/50 border-b-2 border-orange-200 focus:border-orange-600 outline-none transition rounded-t-md placeholder-gray-400 text-gray-800"></div>
+                    
+                    <div class="group">
+                        <label class="block text-xs font-bold text-orange-800 uppercase mb-1">मंदिर में किससे जुड़े हैं?</label>
+                        <select id="devotee-select" onchange="toggleManualDevoteeInput()" class="w-full p-3 bg-orange-50/50 border-b-2 border-orange-200 focus:border-orange-600 outline-none transition rounded-t-md text-gray-800">
+                            <option value="">-- चुनें (Select Name) --</option>
+                            </select>
+                        <input type="text" id="devotee-manual" placeholder="नाम लिखें (Type Name)" class="hidden w-full p-3 mt-2 bg-orange-50/50 border-b-2 border-orange-200 focus:border-orange-600 outline-none transition rounded-t-md text-gray-800">
+                    </div>
+
                     <button type="submit" id="submit-button" class="w-full mt-4 bg-orange-700 text-white py-3.5 rounded-lg font-bold shadow-md hover:bg-orange-800 transition-transform active:scale-95 flex items-center justify-center">हरे कृष्णा (Get Pass)</button>
                 </form>
             </div>
@@ -132,6 +140,18 @@
                         <span class="text-sm font-bold text-orange-900">Registration Status</span>
                         <button id="reg-toggle-btn" onclick="toggleRegistrationStatus()" class="px-4 py-1.5 rounded-full text-xs font-extrabold transition shadow-sm"></button>
                     </div>
+
+                    <details class="mb-4 bg-white p-3 rounded-lg border border-orange-100">
+                        <summary class="font-bold text-orange-800 cursor-pointer text-sm select-none flex justify-between items-center">
+                            <span>Manage Devotee List</span>
+                            <span class="text-xs text-gray-400">Click to expand</span>
+                        </summary>
+                        <div class="mt-3">
+                            <p class="text-[10px] text-gray-500 mb-1">Enter names one per line. Users will see this list.</p>
+                            <textarea id="admin-devotee-list" class="w-full p-2 border border-orange-200 rounded text-xs bg-orange-50/30 focus:outline-none" rows="6" placeholder="Example:&#10;HG Prabhu 1&#10;HG Prabhu 2"></textarea>
+                            <button onclick="saveDevoteeList()" class="bg-orange-600 text-white w-full py-2 rounded text-xs font-bold mt-2 shadow hover:bg-orange-700">Save List</button>
+                        </div>
+                    </details>
                     
                     <div class="mb-4">
                         <label class="block text-xs font-bold text-orange-800 mb-1">Select Date:</label>
@@ -145,7 +165,7 @@
                     <div class="flex gap-3">
                         <button onclick="exportToExcel()" class="flex-1 bg-green-600 text-white py-2.5 rounded-lg text-xs font-bold shadow-sm border border-green-700 hover:bg-green-700 flex items-center justify-center gap-1">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                            Download Excel (.xlsx)
+                            Download Excel
                         </button>
                         <button onclick="clearAllData()" class="flex-1 bg-white text-red-600 py-2.5 rounded-lg text-xs font-bold shadow-sm border border-red-200 hover:bg-red-50">Clear Data</button>
                     </div>
@@ -218,15 +238,53 @@
             const profiles = getFamilyProfiles();
             document.getElementById('back-to-family-btn').classList.toggle('hidden', profiles.length === 0);
             
+            // Populate Fields
+            const select = document.getElementById('devotee-select');
+            const manual = document.getElementById('devotee-manual');
+            
+            // Reset fields
+            document.getElementById('name').value = "";
+            document.getElementById('contact').value = "";
+            document.getElementById('home_address').value = "";
+            select.value = "";
+            manual.value = "";
+            manual.classList.add('hidden');
+
             if(profiles.length > 0) {
                 document.getElementById('home_address').value = profiles[0].homeAddress;
-                document.getElementById('devotee').value = profiles[0].devotee;
-                document.getElementById('name').value = "";
-                document.getElementById('contact').value = ""; 
-            } else { 
-                document.getElementById('registration-form').reset(); 
-            }
+                // Try to auto-select connected devotee
+                const savedDevotee = profiles[0].devotee;
+                let optionFound = false;
+                for (let i = 0; i < select.options.length; i++) {
+                    if (select.options[i].value === savedDevotee) {
+                        select.selectedIndex = i;
+                        optionFound = true;
+                        break;
+                    }
+                }
+                // If saved devotee is not in list (or was manual), set to Other
+                if(!optionFound && savedDevotee) {
+                    select.value = "Other";
+                    manual.value = savedDevotee;
+                    manual.classList.remove('hidden');
+                }
+            } 
             views.form.classList.remove('hidden');
+        };
+
+        // ✅ LOGIC FOR MANUAL INPUT
+        window.toggleManualDevoteeInput = function() {
+            const select = document.getElementById('devotee-select');
+            const manual = document.getElementById('devotee-manual');
+            if(select.value === "Other") {
+                manual.classList.remove('hidden');
+                manual.required = true;
+                manual.focus();
+            } else {
+                manual.classList.add('hidden');
+                manual.required = false;
+                manual.value = "";
+            }
         };
 
         window.renderAdminLogin = function() { hideAll(); views.login.classList.remove('hidden'); };
@@ -242,13 +300,22 @@
             return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
         }
 
-        async function generateTicket(name, contact, homeAddress, devotee) {
+        async function generateTicket(name, contact, homeAddress, devoteeArg) {
             if(!userId) { alert("Reloading..."); window.location.reload(); return; }
             if(!/^\d{10}$/.test(contact)) { alert("Invalid Mobile Number"); return; }
             const btn = document.querySelector('button:not(.hidden)');
             const originalText = btn ? btn.innerText : "";
             if(btn) { btn.disabled = true; btn.innerText = 'Verifying...'; }
             
+            // Handle Devotee Logic if coming from Form
+            let devotee = devoteeArg;
+            if(!devotee) { // If called from form submit
+                const select = document.getElementById('devotee-select');
+                const manual = document.getElementById('devotee-manual');
+                devotee = select.value === "Other" ? manual.value.trim() : select.value;
+                if(!devotee) { alert("Please select a devotee connection."); if(btn) btn.disabled=false; return; }
+            }
+
             try {
                 const now = new Date();
                 const todayStr = getLocalDateString(now.toISOString()); 
@@ -306,16 +373,40 @@
                 document.getElementById('name').value,
                 document.getElementById('contact').value,
                 document.getElementById('home_address').value,
-                document.getElementById('devotee').value
+                null // Pass null so function reads from inputs
             );
         });
 
         async function init() {
             app = initializeApp(firebaseConfig); db = getFirestore(app); auth = getAuth(app);
+            
+            // 1. Settings Snapshot (Registration & Devotee List)
             onSnapshot(doc(db, `artifacts/${firebaseConfig.projectId}/config/settings`), (snap) => {
-                isRegistrationOpen = snap.exists() ? snap.data().isRegistrationOpen !== false : true;
-                const btn = document.getElementById('reg-toggle-btn');
-                if(btn) { btn.innerText = isRegistrationOpen ? "OPEN" : "CLOSED"; btn.className = isRegistrationOpen ? "px-4 py-1.5 rounded-full text-xs font-extrabold bg-green-600 text-white" : "px-4 py-1.5 rounded-full text-xs font-extrabold bg-red-600 text-white"; }
+                if(snap.exists()) {
+                    const data = snap.data();
+                    // Registration Toggle
+                    isRegistrationOpen = data.isRegistrationOpen !== false;
+                    const btn = document.getElementById('reg-toggle-btn');
+                    if(btn) { btn.innerText = isRegistrationOpen ? "OPEN" : "CLOSED"; btn.className = isRegistrationOpen ? "px-4 py-1.5 rounded-full text-xs font-extrabold bg-green-600 text-white" : "px-4 py-1.5 rounded-full text-xs font-extrabold bg-red-600 text-white"; }
+                    
+                    // Populate Devotee Dropdown & Admin Textarea
+                    const devotees = data.devoteeList || [];
+                    const select = document.getElementById('devotee-select');
+                    
+                    // Save current selection to restore after update if possible
+                    const currentVal = select.value;
+                    
+                    let html = '<option value="">-- चुनें (Select Name) --</option>';
+                    devotees.forEach(d => { html += `<option value="${d}">${d}</option>`; });
+                    html += '<option value="Other">Other / अन्य (Write Manually)</option>';
+                    select.innerHTML = html;
+                    select.value = currentVal; // Restore if possible
+
+                    // Update Admin Textarea
+                    document.getElementById('admin-devotee-list').value = devotees.join('\n');
+                } else {
+                    isRegistrationOpen = true; 
+                }
                 if(!isRegistrationOpen && views.admin.classList.contains('hidden')) renderFamilyScreen();
             }, (error) => {
                 errorMsg.innerText = "Error: Check Firestore Rules.";
@@ -333,6 +424,18 @@
                 }
             });
         }
+
+        // ✅ ADMIN: SAVE DEVOTEE LIST
+        window.saveDevoteeList = async function() {
+            const raw = document.getElementById('admin-devotee-list').value;
+            const list = raw.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+            if(!confirm(`Save ${list.length} names?`)) return;
+            
+            try {
+                await setDoc(doc(db, `artifacts/${firebaseConfig.projectId}/config/settings`), { devoteeList: list }, { merge: true });
+                alert("List Updated!");
+            } catch(e) { alert("Error saving list: " + e.message); }
+        };
 
         window.fetchAttendees = async function() {
             const t = document.getElementById('attendee-list'); 
