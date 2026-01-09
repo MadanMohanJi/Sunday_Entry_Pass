@@ -1,703 +1,606 @@
-/**
- * ----------------------------------------------------------
- * ULTIMATE ATTENDANCE MANAGER (v37 - MANUAL ENTRY + AUTOCOMPLETE)
- * ----------------------------------------------------------
- * NEW FEATURE:
- * - Manual Entry Tab: A form to type data easily.
- * - Reference Autocomplete: Suggests names from the sheet (Names & References)
- * while typing "Connected To" field.
- * ----------------------------------------------------------
- */
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ISKCON UJJAIN TEMPLE PASS</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;500;700&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
-function onOpen() {
-  try {
-    SpreadsheetApp.getUi()
-      .createMenu('Attendance Manager')
-      .addItem('🚀 Launch Attendance Sidebar', 'showSidebar')
-      .addSeparator()
-      .addItem('⬇️ Export Custom CSV', 'showExportSidebar')
-      .addToUi();
-  } catch (e) {
-    console.log("UI not available: " + e.message);
-  }
-}
-
-// --- 1. ATTENDANCE SIDEBAR ---
-function showSidebar() {
-  try {
-    const html = HtmlService.createHtmlOutput(getHtml())
-      .setTitle('Attendance Manager')
-      .setWidth(420);
-    SpreadsheetApp.getUi().showSidebar(html);
-  } catch (e) {
-    Logger.log("Error opening sidebar: " + e.message);
-  }
-}
-
-// --- 2. EXPORT SIDEBAR ---
-function showExportSidebar() {
-  try {
-    const html = HtmlService.createHtmlOutput(getExportHtml())
-      .setTitle('Export to CSV')
-      .setWidth(350);
-    SpreadsheetApp.getUi().showSidebar(html);
-  } catch (e) {
-    Logger.log("Error opening export: " + e.message);
-  }
-}
-
-/** HTML FOR ATTENDANCE SIDEBAR */
-function getHtml() {
-  return `
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <base target="_top">
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-        <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
-        <style>
-          body { font-family: 'Inter', sans-serif; padding: 16px; background-color: #f8fafc; color: #334155; }
-          h3 { margin: 0 0 12px 0; font-size: 16px; font-weight: 700; color: #0f172a; }
-          .card { background: white; padding: 16px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 16px; border: 1px solid #e2e8f0; }
-          label { display: block; font-size: 11px; font-weight: 600; text-transform: uppercase; color: #64748b; margin-bottom: 6px; }
-          textarea { width: 100%; height: 80px; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: monospace; font-size: 11px; resize: vertical; box-sizing: border-box; white-space: pre; overflow-x: auto; }
-          textarea:focus { outline: none; border-color: #6366f1; ring: 2px solid #6366f1; }
-          select, input { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; margin-bottom: 12px; box-sizing: border-box; }
-          
-          /* TABS */
-          .tabs { display: flex; border-bottom: 1px solid #e2e8f0; margin-bottom: 12px; }
-          .tab { padding: 8px 12px; cursor: pointer; font-size: 12px; font-weight: 600; color: #64748b; border-bottom: 2px solid transparent; }
-          .tab.active { color: #4f46e5; border-bottom-color: #4f46e5; }
-          
-          .tab-content { display: none; }
-          .tab-content.active { display: block; }
-
-          /* BUTTONS */
-          button.primary { background: #4f46e5; color: white; border: none; padding: 12px; border-radius: 8px; width: 100%; font-weight: 600; cursor: pointer; transition: all 0.2s; }
-          button.primary:hover { background: #4338ca; }
-          button.primary:disabled { background: #94a3b8; cursor: not-allowed; }
-          
-          button.secondary { background: #fff; color: #64748b; border: 1px solid #e2e8f0; font-size: 12px; padding: 8px; width: 100%; margin-top: 8px; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
-          button.secondary:hover { background: #f1f5f9; border-color: #94a3b8; color: #475569; }
-          
-          button.danger { background: #fff; color: #ef4444; border: 1px solid #fecaca; font-size: 12px; padding: 8px; width: 100%; margin-top: 5px; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
-          button.danger:hover { background: #fef2f2; border-color: #ef4444; }
-
-          /* MAPPING */
-          .map-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
-          .map-label { font-size: 11px; width: 60px; flex-shrink: 0; font-weight: bold; }
-          .map-select { margin-bottom: 0; font-size: 11px; }
-          .add-btn { background: #f1f5f9; color: #334155; border: 1px dashed #cbd5e1; padding: 6px; width: 100%; text-align: center; border-radius: 6px; font-size: 11px; cursor: pointer; margin-top: 5px; }
-          .add-btn:hover { background: #e2e8f0; }
-
-          .status { margin-top: 12px; padding: 10px; border-radius: 8px; font-size: 12px; display: none; }
-          .status.success { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
-          .status.error { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
-          .refresh { float: right; color: #6366f1; font-size: 11px; cursor: pointer; text-decoration: none; }
-          .or-divider { text-align: center; font-size: 10px; color: #94a3b8; margin: -5px 0 8px 0; font-weight: bold; }
-        </style>
-      </head>
-      <body>
-        <h3>Attendance Manager</h3>
+    <style>
+        body { 
+            font-family: 'Noto Sans Devanagari', 'Mangal', sans-serif !important; 
+            background-color: #fff7ed;
+            background-image: radial-gradient(#fed7aa 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        h1, h2, h3 { font-family: 'Playfair Display', serif; }
         
-        <div class="tabs">
-          <div class="tab active" onclick="switchTab('paste')">Paste Data</div>
-          <div class="tab" onclick="switchTab('manual')">Manual Entry</div>
-        </div>
+        #entry-card, #entry-card * {
+            font-family: 'Noto Sans Devanagari', sans-serif !important;
+        }
 
-        <div class="card">
-          
-          <!-- TAB 1: PASTE DATA -->
-          <div id="tab-paste" class="tab-content active">
-            <label>Data Source (ID [Tab] Name...)</label>
-            <input type="file" id="fileInput" accept=".csv, .xlsx, .xls" onchange="handleFile()">
-            <div class="or-divider">OR PASTE</div>
-            <textarea id="pasteArea" placeholder="101\n102  Rahul  98765"></textarea>
-          </div>
+        .ticket-edge-top {
+            background-image: radial-gradient(circle at 10px top, transparent 10px, #ffffff 10px);
+            background-position: -10px top;
+            background-size: 20px 20px;
+            background-repeat: repeat-x;
+            height: 20px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-4">
 
-          <!-- TAB 2: MANUAL ENTRY -->
-          <div id="tab-manual" class="tab-content">
-            <label>Add Single Entry</label>
-            <input type="text" id="manualName" placeholder="Name or ID (Required)">
-            <input type="text" id="manualInfo" placeholder="Mobile / Address (Optional)">
-            
-            <label>Connected To (Reference)</label>
-            <input type="text" id="manualRef" list="refSuggestions" placeholder="Type to search name...">
-            <datalist id="refSuggestions">
-              <!-- Populated by GS -->
-            </datalist>
-            
-            <button class="secondary" onclick="addToPasteArea()" style="margin-top:0; border-color:#6366f1; color:#6366f1;">
-              + Add to Queue
-            </button>
-          </div>
-
-        </div>
-
-        <div class="card">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-            <label style="margin:0">2. Map Your Data</label>
-            <a class="refresh" onclick="loadHeaders()">Refresh Headers</a>
-          </div>
-          <div id="mappingContainer">
-            <div style="text-align:center; padding:10px; color:#999;">Loading sheet headers...</div>
-          </div>
-          <div class="add-btn" onclick="addMappingRow()">+ Add Another Field</div>
-        </div>
-
-        <div class="card">
-          <label>3. Date Column</label>
-          <input type="date" id="dateInput">
-          <select id="columnSelect">
-            <option value="END">Create at the very end</option>
-          </select>
-        </div>
-
-        <button class="primary" id="runBtn" onclick="runProcess()">Merge & Mark 'P'</button>
-        <button class="secondary" id="dedupeBtn" onclick="dedupeInput()">Cleanup Input Box</button>
-        <button class="danger" id="sheetDedupeBtn" onclick="runSheetDedupe()">⚠ Remove Duplicates from Sheet</button>
+    <div id="app-container" class="w-full max-w-md bg-white shadow-2xl rounded-xl overflow-hidden border-t-4 border-orange-600 relative">
         
-        <div id="statusBox" class="status"></div>
+        <button onclick="renderAdminLogin()" class="absolute top-4 right-4 z-50 p-2 bg-white text-orange-700 rounded-full shadow-md border border-orange-200 hover:bg-orange-100 transition-all transform hover:scale-110" title="Admin Login">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+        </button>
 
-        <script>
-          let sheetHeaders = [];
-          let cachedOptions = "";
-          let mappingCount = 0;
+        <div class="pt-12 pb-8 text-center bg-orange-50/80 border-b border-orange-100">
+            <div class="flex flex-col items-center justify-center">
+                <h1 class="text-4xl font-extrabold text-orange-900 tracking-wide leading-tight mb-2">इस्कॉन उज्जैन</h1>
+                <h2 class="text-xl font-bold text-orange-700 uppercase tracking-wider border-b-2 border-orange-200 inline-block pb-1">ISKCON UJJAIN TEMPLE PASS</h2>
+            </div>
+            <p class="text-[10px] font-medium text-orange-600 uppercase tracking-widest opacity-80 leading-relaxed mt-4">Founder Acharya: His Divine Grace<br>A.C. Bhaktivedanta Swami Prabhupada</p>
+        </div>
 
-          window.onload = function() {
-            document.getElementById('dateInput').valueAsDate = new Date();
-            loadHeaders();
-            loadSuggestions(); // Load autocomplete data
-          };
+        <div class="p-6 md:p-8">
+            <div id="loading-state" class="text-center py-6">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto mb-2"></div>
+                <p class="text-sm text-gray-500">Connecting...</p>
+                <p id="loading-error" class="text-xs text-red-500 mt-2 hidden"></p>
+            </div>
 
-          function switchTab(tabName) {
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            <div id="closed-section" class="hidden text-center py-6 bg-red-50 rounded-lg border border-red-100">
+                <p class="text-red-800 font-bold">🙏 क्षमा करें, पंजीकरण बंद है</p>
+                <button onclick="renderAdminLogin()" class="mt-4 text-xs text-gray-400 underline">Sevak Login</button>
+            </div>
+
+            <div id="family-section" class="hidden">
+                <div class="flex justify-between items-center mb-4 border-b border-orange-100 pb-2">
+                    <h2 class="text-lg font-bold text-gray-800">Saved Devotees</h2>
+                    <button onclick="clearFamilyData()" class="text-xs text-red-400 hover:text-red-600">Clear</button>
+                </div>
+                <div id="family-list" class="space-y-3 mb-6 max-h-[40vh] overflow-y-auto pr-1"></div>
+                <button onclick="showNewForm()" class="w-full py-3 bg-orange-50 border border-orange-200 text-orange-800 rounded-lg text-sm font-bold hover:bg-orange-100 transition flex items-center justify-center gap-2">
+                    <span>+</span> नया पास बनाएँ (New Entry)
+                </button>
+                <div class="text-center mt-6"><button onclick="renderAdminLogin()" class="text-xs text-gray-300">Admin</button></div>
+            </div>
+
+            <div id="form-section" class="hidden">
+                <div class="flex items-center mb-6">
+                    <button onclick="renderFamilyScreen()" id="back-to-family-btn" class="mr-3 text-orange-500 hover:text-orange-700 hidden">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+                    </button>
+                    <h2 class="text-xl font-bold text-gray-800">अतिथि पंजीकरण</h2>
+                </div>
+                <form id="registration-form" class="space-y-5" autocomplete="off">
+                    <div class="group"><label class="block text-xs font-bold text-orange-800 uppercase mb-1">पूरा नाम (Full Name)</label><input type="text" id="name" required placeholder="अपना नाम लिखें" class="w-full p-3 bg-orange-50/50 border-b-2 border-orange-200 focus:border-orange-600 outline-none transition rounded-t-md placeholder-gray-400 text-gray-800"></div>
+                    
+                    <div class="group">
+                        <label class="block text-xs font-bold text-orange-800 uppercase mb-1">लिंग (Gender)</label>
+                        <select id="gender" required class="w-full p-3 bg-orange-50/50 border-b-2 border-orange-200 focus:border-orange-600 outline-none transition rounded-t-md text-gray-800">
+                            <option value="">-- चुनें (Select) --</option>
+                            <option value="Male">पुरुष (Male)</option>
+                            <option value="Female">महिला (Female)</option>
+                        </select>
+                    </div>
+
+                    <div class="group"><label class="block text-xs font-bold text-orange-800 uppercase mb-1">मोबाइल नंबर (Mobile)</label><input type="tel" id="contact" required maxlength="10" placeholder="10 अंकों का नंबर" class="w-full p-3 bg-orange-50/50 border-b-2 border-orange-200 focus:border-orange-600 outline-none transition rounded-t-md placeholder-gray-400 text-gray-800"></div>
+                    <div class="group"><label class="block text-xs font-bold text-orange-800 uppercase mb-1">घर का पता (Address)</label><input type="text" id="home_address" required placeholder="अपना पता लिखें" class="w-full p-3 bg-orange-50/50 border-b-2 border-orange-200 focus:border-orange-600 outline-none transition rounded-t-md placeholder-gray-400 text-gray-800"></div>
+                    
+                    <div class="group relative">
+                        <label class="block text-xs font-bold text-orange-800 uppercase mb-1">मंदिर में किससे जुड़े हैं?</label>
+                        <select id="devotee-select" onchange="toggleManualDevoteeInput()" class="w-full p-3 bg-orange-50/50 border-b-2 border-orange-200 focus:border-orange-600 outline-none transition rounded-t-md text-gray-800">
+                            <option value="">-- चुनें (Select Name) --</option>
+                            </select>
+                        
+                        <div class="relative">
+                            <input type="text" id="devotee-manual" placeholder="नाम लिखें (Start Typing...)" class="hidden w-full p-3 mt-2 bg-orange-50/50 border-b-2 border-orange-200 focus:border-orange-600 outline-none transition rounded-t-md text-gray-800" autocomplete="off">
+                            <div id="suggestions-box" class="hidden absolute z-50 w-full bg-white border border-gray-200 rounded-b-lg shadow-xl max-h-40 overflow-y-auto mt-1">
+                                </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="submit-button" class="w-full mt-4 bg-orange-700 text-white py-3.5 rounded-lg font-bold shadow-md hover:bg-orange-800 transition-transform active:scale-95 flex items-center justify-center">हरे कृष्णा (Get Pass)</button>
+                </form>
+            </div>
+
+            <div id="card-section" class="hidden">
+                <div class="text-center mb-4">
+                    <div class="bg-green-100 text-green-800 px-4 py-1 rounded-full text-sm font-bold inline-flex items-center mb-2">✓ Pass Generated!</div>
+                    <h2 class="text-lg font-bold text-gray-800">कृपया गेट पर दिखाएं</h2>
+                </div>
+                <div id="entry-card" class="w-full bg-white border-2 border-orange-500 rounded-xl overflow-hidden shadow-xl relative mb-6">
+                    <div class="ticket-edge-top absolute top-0 left-0 w-full z-10"></div>
+                    <div class="bg-white pt-6 pb-2 text-center border-b border-orange-100 relative z-0 mt-2">
+                        <h3 class="text-2xl font-extrabold text-orange-800" style="font-family: 'Playfair Display', serif;">ISKCON UJJAIN</h3>
+                        <p class="text-xs font-bold text-orange-600 uppercase tracking-widest">TEMPLE ENTRY PASS</p>
+                        <div class="mt-3 bg-orange-50 py-2 border-y border-orange-100">
+                            <p id="card-timestamp" class="text-xl font-bold text-orange-800 font-mono"></p>
+                        </div>
+                    </div>
+                    <div class="p-6 space-y-4 relative">
+                        <div><p class="text-[10px] uppercase text-orange-400 font-bold tracking-wider">Visitor Name</p><p id="card-name" class="text-3xl font-bold text-gray-900 leading-tight font-serif"></p></div>
+                        <div class="border-t border-dashed border-orange-200"></div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><p class="text-[10px] uppercase text-orange-400 font-bold tracking-wider">Mobile</p><p id="card-contact" class="text-sm font-semibold text-gray-800 font-mono"></p></div>
+                            <div><p class="text-[10px] uppercase text-orange-400 font-bold tracking-wider">Connected With</p><p id="card-devotee" class="text-sm font-bold text-orange-700"></p></div>
+                        </div>
+                        <div><p class="text-[10px] uppercase text-orange-400 font-bold tracking-wider">Address</p><p id="card-home-address" class="text-xs font-medium text-gray-600 leading-snug"></p></div>
+                        <div class="absolute bottom-2 right-2 text-[10px] text-gray-300 font-bold" id="card-gender-display"></div>
+                    </div>
+                    <div class="bg-orange-50 p-2 text-center border-t border-orange-100"><p class="text-[10px] uppercase text-orange-400 font-bold">Pass ID</p><p id="card-user-id" class="text-sm font-mono text-orange-800 font-bold uppercase tracking-wider"></p></div>
+                </div>
+                <div class="space-y-3">
+                    <button id="download-btn" onclick="downloadCard()" class="w-full bg-green-600 text-white py-3 rounded-lg font-bold shadow hover:bg-green-700 flex items-center justify-center gap-2">Download</button>
+                    <button onclick="renderFamilyScreen()" class="w-full text-orange-700 bg-orange-50 border border-orange-200 py-3 rounded-lg text-sm font-bold hover:bg-orange-100">+ Add Person</button>
+                </div>
+            </div>
+
+            <div id="admin-dashboard-section" class="hidden">
+                <div class="flex justify-between items-center mb-4 pb-2 border-b border-gray-100"><h2 class="text-lg font-bold text-gray-800">Admin Seva Panel</h2><button onclick="handleSignOut()" class="text-xs text-red-500 font-bold bg-red-50 px-3 py-1 rounded-full hover:bg-red-100">LOGOUT</button></div>
+                
+                <div class="bg-orange-50 rounded-xl p-4 mb-4 border border-orange-200 shadow-sm">
+                    <div class="flex items-center justify-between mb-4 bg-white p-3 rounded-lg border border-orange-100">
+                        <span class="text-sm font-bold text-orange-900">Registration Status</span>
+                        <button id="reg-toggle-btn" onclick="toggleRegistrationStatus()" class="px-4 py-1.5 rounded-full text-xs font-extrabold transition shadow-sm"></button>
+                    </div>
+
+                    <details class="mb-4 bg-white p-3 rounded-lg border border-orange-100">
+                        <summary class="font-bold text-orange-800 cursor-pointer text-sm select-none flex justify-between items-center">
+                            <span>Manage Devotee List</span>
+                            <span class="text-xs text-gray-400">Click to expand</span>
+                        </summary>
+                        <div class="mt-3">
+                            <p class="text-[10px] text-gray-500 mb-1">Enter names one per line. Smart Auto-Correct & Suggestions Enabled.</p>
+                            <textarea id="admin-devotee-list" class="w-full p-2 border border-orange-200 rounded text-xs bg-orange-50/30 focus:outline-none" rows="6" placeholder="Example:&#10;HG Prabhu 1&#10;HG Prabhu 2"></textarea>
+                            <button onclick="saveDevoteeList()" class="bg-orange-600 text-white w-full py-2 rounded text-xs font-bold mt-2 shadow hover:bg-orange-700">Save List</button>
+                        </div>
+                    </details>
+                    
+                    <div class="mb-4">
+                        <label class="block text-xs font-bold text-orange-800 mb-1">Select Date:</label>
+                        <div class="flex gap-2">
+                            <input type="date" id="admin-date-filter" class="w-full p-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300">
+                            <button onclick="fetchAttendees()" class="bg-orange-600 text-white px-3 py-2 rounded-lg text-xs font-bold hover:bg-orange-700 shadow">Filter</button>
+                            <button onclick="fetchAllData()" class="bg-gray-700 text-white px-3 py-2 rounded-lg text-xs font-bold hover:bg-gray-900 shadow">Show All</button>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-3">
+                        <button onclick="exportToExcel()" class="flex-1 bg-green-600 text-white py-2.5 rounded-lg text-xs font-bold shadow-sm border border-green-700 hover:bg-green-700 flex items-center justify-center gap-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                            Download Excel (.xlsx)
+                        </button>
+                        <button onclick="clearAllData()" class="flex-1 bg-white text-red-600 py-2.5 rounded-lg text-xs font-bold shadow-sm border border-red-200 hover:bg-red-50">Clear Data</button>
+                    </div>
+                </div>
+                <div class="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm"><div class="max-h-80 overflow-y-auto"><table class="w-full text-left text-sm"><thead class="bg-orange-50/80 sticky top-0 text-orange-800 text-xs uppercase font-bold"><tr><th class="p-3">Name</th><th class="p-3">Phone</th><th class="p-3">Devotee</th></tr></thead><tbody id="attendee-list" class="divide-y divide-orange-50"></tbody></table></div></div>
+            </div>
             
-            if(tabName === 'paste') {
-               document.querySelectorAll('.tab')[0].classList.add('active');
-               document.getElementById('tab-paste').classList.add('active');
-            } else {
-               document.querySelectorAll('.tab')[1].classList.add('active');
-               document.getElementById('tab-manual').classList.add('active');
-            }
-          }
+            <div id="admin-login-section" class="hidden text-center">
+                <h2 class="text-xl font-bold text-gray-800 mb-6 font-serif mt-8">Sevak Login Area</h2>
+                <form id="admin-login-form" class="space-y-4"><input type="email" id="admin-email" required placeholder="Email ID" class="w-full p-3 bg-orange-50/50 border-2 border-orange-100 rounded-lg outline-none focus:border-orange-400"><input type="password" id="admin-password" required placeholder="Password" class="w-full p-3 bg-orange-50/50 border-2 border-orange-100 rounded-lg outline-none focus:border-orange-400"><button type="submit" class="w-full bg-orange-800 text-white py-3 rounded-lg font-bold hover:bg-orange-900 shadow-md">Login Securely</button></form>
+                <button onclick="renderForm()" class="mt-6 text-sm text-gray-400 hover:text-orange-700 underline transition">Cancel & Go Back</button>
+            </div>
+        </div>
+    </div>
 
-          function loadHeaders() {
-            google.script.run.withSuccessHandler(initUI).getSheetHeaders();
-          }
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signOut, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot, collection, addDoc, getDocs, writeBatch, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyBOc6EeIc59S6COb80NJfYyl3GdRiI2H6k",
+            authDomain: "entrycard-1a28a.firebaseapp.com",
+            projectId: "entrycard-1a28a",
+            storageBucket: "entrycard-1a28a.firebasestorage.app",
+            messagingSenderId: "571342230056",
+            appId: "1:571342230056:web:de9f4c19cd820cee6cdb1d",
+            measurementId: "G-MQWXKCQ85H"
+        };
+        const ADMIN_EMAILS = ["shivesh211204@gmail.com", "iskcon.sunday.feast@gmail.com"];
 
-          function loadSuggestions() {
-            google.script.run.withSuccessHandler(fillDatalist).getReferenceSuggestions();
-          }
+        let app, db, auth, userId = null, isRegistrationOpen = true;
+        let globalDevoteeList = []; // Store for matching
+        const views = { loading: document.getElementById('loading-state'), closed: document.getElementById('closed-section'), family: document.getElementById('family-section'), form: document.getElementById('form-section'), card: document.getElementById('card-section'), admin: document.getElementById('admin-dashboard-section'), login: document.getElementById('admin-login-section') };
+        const errorMsg = document.getElementById('loading-error');
+        let currentViewData = [];
 
-          function fillDatalist(names) {
-            const dl = document.getElementById('refSuggestions');
-            dl.innerHTML = '';
-            names.forEach(name => {
-              const opt = document.createElement('option');
-              opt.value = name;
-              dl.appendChild(opt);
-            });
-          }
-
-          function addToPasteArea() {
-            const name = document.getElementById('manualName').value.trim();
-            const info = document.getElementById('manualInfo').value.trim();
-            const ref = document.getElementById('manualRef').value.trim();
-            
-            if(!name) return alert("Name/ID is required");
-            
-            // Construct Tab Separated Line
-            // Logic: Name [Tab] Info [Tab] Reference
-            // This assumes user maps 1st=Name, 2nd=Mobile, 3rd=Reference
-            let line = name;
-            if(info) line += '\\t' + info;
-            else line += '\\t'; // Empty slot if info missing but ref exists
-            
-            if(ref) line += '\\t' + ref;
-            
-            const pasteArea = document.getElementById('pasteArea');
-            const currentVal = pasteArea.value;
-            pasteArea.value = currentVal ? currentVal + '\\n' + line : line;
-            
-            // Clear inputs
-            document.getElementById('manualName').value = '';
-            document.getElementById('manualInfo').value = '';
-            document.getElementById('manualRef').value = '';
-            
-            // Switch back to see result
-            switchTab('paste');
-            showStatus("Added to queue. Please check Mapping below matches your fields.", "success");
-          }
-
-          function initUI(headers) {
-            sheetHeaders = headers;
-            cachedOptions = '<option value="">(Ignore)</option>';
-            sheetHeaders.forEach((h) => {
-               cachedOptions += \`<option value="\${h}">\${h}</option>\`; 
-            });
-            const container = document.getElementById('mappingContainer');
-            container.innerHTML = '';
-            mappingCount = 0;
-            for(let i=0; i<5; i++) addMappingRow();
-            if(sheetHeaders.length > 0) {
-               const nameHeader = sheetHeaders.find(h => h.toLowerCase().includes('name') || h.toLowerCase().includes('id'));
-               if(nameHeader) {
-                 const firstSelect = document.getElementById('map_0');
-                 if(firstSelect) firstSelect.value = nameHeader;
-               }
-            }
-            const sel = document.getElementById('columnSelect');
-            sel.innerHTML = '<option value="END">Create at the very end</option>';
-            headers.forEach(h => {
-              if(h) {
-                const opt = document.createElement('option');
-                opt.value = h;
-                opt.innerText = 'After: ' + h;
-                sel.appendChild(opt);
-              }
-            });
-          }
-
-          function addMappingRow() {
-            const container = document.getElementById('mappingContainer');
-            const i = mappingCount;
-            let labelText = (i+1) + "th Item";
-            if(i===0) labelText = "1st Item";
-            else if(i===1) labelText = "2nd Item";
-            else if(i===2) labelText = "3rd Item";
-            const div = document.createElement('div');
-            div.className = 'map-row';
-            div.innerHTML = \`
-              <div class="map-label">\${labelText}</div>
-              <select id="map_\${i}" class="map-select">\${cachedOptions}</select>
-            \`;
-            container.appendChild(div);
-            mappingCount++;
-          }
-
-          async function handleFile() {
-             const input = document.getElementById('fileInput');
-             const file = input.files[0];
-             if(!file) return;
-             showStatus("Reading file...", "none");
-             document.getElementById('statusBox').style.display = 'block';
-             document.getElementById('statusBox').innerText = "Reading file...";
-             try {
-               const data = await file.arrayBuffer();
-               const workbook = XLSX.read(data);
-               const firstSheetName = workbook.SheetNames[0];
-               const worksheet = workbook.Sheets[firstSheetName];
-               const json = XLSX.utils.sheet_to_json(worksheet, {header: 1, defval: ""});
-               if(json.length === 0) throw new Error("File appears empty");
-               const tsv = json.map(row => row.join('\\t')).join('\\n');
-               document.getElementById('pasteArea').value = tsv;
-               showStatus("File loaded! Review data in textarea.", "success");
-             } catch(e) {
-               showStatus("Error reading file: " + e.message, "error");
-             }
-          }
-
-          function dedupeInput() {
-            const area = document.getElementById('pasteArea');
-            const raw = area.value;
-            if(!raw.trim()) return showStatus("Input box is empty.", "error");
-            const lines = raw.split(/\\n/);
-            const uniqueSet = new Set();
-            const cleanLines = [];
-            let duplicateCount = 0;
-            lines.forEach(line => {
-              const trimmed = line.trim();
-              if(!trimmed) return;
-              const delim = trimmed.includes('\\t') ? '\\t' : ',';
-              const key = trimmed.split(delim)[0].trim().toLowerCase();
-              if(uniqueSet.has(key)) {
-                duplicateCount++;
-              } else {
-                uniqueSet.add(key);
-                cleanLines.push(trimmed);
-              }
-            });
-            area.value = cleanLines.join('\\n');
-            if(duplicateCount > 0) showStatus("Removed " + duplicateCount + " duplicates from input.", "success");
-            else showStatus("No duplicates found in input.", "success");
-          }
-
-          function runSheetDedupe() {
-            if(!confirm("Remove duplicates from Sheet based on Name/ID?")) return;
-            const btn = document.getElementById('sheetDedupeBtn');
-            btn.disabled = true;
-            btn.innerText = "Cleaning...";
-            google.script.run
-              .withSuccessHandler(res => {
-                btn.disabled = false;
-                btn.innerText = "⚠ Remove Duplicates from Sheet";
-                showStatus(res, "success");
-                loadHeaders();
-              })
-              .withFailureHandler(err => {
-                btn.disabled = false;
-                btn.innerText = "⚠ Remove Duplicates from Sheet";
-                showStatus("Error: " + err.message, "error");
-              })
-              .removeSheetDuplicates();
-          }
-
-          function runProcess() {
-            const text = document.getElementById('pasteArea').value;
-            const date = document.getElementById('dateInput').value;
-            const insertAfter = document.getElementById('columnSelect').value;
-            const btn = document.getElementById('runBtn');
-
-            if (!text.trim()) return showStatus("Paste data first!", "error");
-
-            const mapping = [];
-            let i = 0;
-            while(document.getElementById('map_' + i)) {
-               mapping.push(document.getElementById('map_' + i).value);
-               i++;
-            }
-
-            if (!mapping[0]) return showStatus("Map the 1st Item (Name/ID).", "error");
-
-            btn.disabled = true;
-            btn.innerText = "Processing...";
-            showStatus("", "none");
-
-            google.script.run
-              .withSuccessHandler(res => {
-                btn.disabled = false;
-                btn.innerText = "Merge & Mark 'P'";
-                showStatus(res.message, res.success ? "success" : "error");
-                if(res.success) {
-                  document.getElementById('pasteArea').value = "";
-                  document.getElementById('fileInput').value = "";
-                  loadHeaders();
+        // ✅ AI LOGIC: Levenshtein Distance
+        function levenshtein(a, b) {
+            const matrix = [];
+            for (let i = 0; i <= b.length; i++) matrix[i] = [i];
+            for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
+            for (let i = 1; i <= b.length; i++) {
+                for (let j = 1; j <= a.length; j++) {
+                    if (b.charAt(i - 1) == a.charAt(j - 1)) {
+                        matrix[i][j] = matrix[i - 1][j - 1];
+                    } else {
+                        matrix[i][j] = Math.min(matrix[i - 1][j - 1] + 1, Math.min(matrix[i][j - 1] + 1, matrix[i - 1][j] + 1));
+                    }
                 }
-              })
-              .withFailureHandler(err => {
-                btn.disabled = false;
-                btn.innerText = "Try Again";
-                showStatus(err.message, "error");
-              })
-              .handleAttendance(text, date, insertAfter, mapping);
-          }
-
-          function showStatus(msg, type) {
-            const el = document.getElementById('statusBox');
-            if (type === "none") { el.style.display = 'none'; return; }
-            el.innerText = msg;
-            el.className = 'status ' + type;
-            el.style.display = 'block';
-          }
-        </script>
-      </body>
-    </html>
-  `;
-}
-
-/** --- SERVER SIDE LOGIC --- */
-
-// Helper to get all existing names for Autocomplete
-function getReferenceSuggestions() {
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-  const lastCol = sheet.getLastColumn();
-  if (lastCol === 0) return [];
-  const headers = sheet.getRange(1, 1, 1, lastCol).getDisplayValues()[0];
-  
-  // Find Name and Reference columns
-  const whitelist = ['name', 'student', 'reference', 'connected', 'devotee', 'father'];
-  const indices = [];
-  headers.forEach((h, i) => {
-    if (whitelist.some(w => h.toLowerCase().includes(w))) indices.push(i);
-  });
-  
-  if (indices.length === 0) return [];
-  
-  const data = sheet.getDataRange().getValues();
-  const suggestions = new Set();
-  
-  for (let i = 1; i < data.length; i++) {
-    indices.forEach(colIdx => {
-      const val = String(data[i][colIdx]).trim();
-      if (val && val.length > 2) suggestions.add(val);
-    });
-  }
-  
-  return Array.from(suggestions).sort();
-}
-
-function getSheetHeaders() {
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-  const lastCol = sheet.getLastColumn();
-  if (lastCol === 0) return [];
-  return sheet.getRange(1, 1, 1, lastCol).getDisplayValues()[0].map(h => h.trim());
-}
-
-function processExport(selectedHeaders) {
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-  const data = sheet.getDataRange().getDisplayValues();
-  const allHeaders = data[0];
-  const indices = [];
-  selectedHeaders.forEach(h => {
-    const idx = allHeaders.indexOf(h);
-    if (idx !== -1) indices.push(idx);
-  });
-  let csv = selectedHeaders.map(h => `"${h}"`).join(",") + "\n";
-  for (let i = 1; i < data.length; i++) {
-    const row = [];
-    indices.forEach(idx => {
-      let val = data[i][idx].toString().replace(/"/g, '""'); 
-      row.push(`"${val}"`);
-    });
-    csv += row.join(",") + "\n";
-  }
-  return csv;
-}
-
-function removeSheetDuplicates() {
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-  const data = sheet.getDataRange().getValues();
-  if (data.length < 2) return "Sheet is empty.";
-  const headers = data[0];
-  const idKeywords = ['id', 'roll', 'enrollment', 'code', 'unique', 'name', 'email', 'mobile'];
-  let idColIndex = -1;
-  for(let keyword of idKeywords) {
-    idColIndex = headers.findIndex(h => h.toString().toLowerCase().includes(keyword));
-    if(idColIndex !== -1) break;
-  }
-  if (idColIndex === -1) idColIndex = 0;
-  const seen = new Set();
-  const newData = [headers]; 
-  let duplicates = 0;
-  for (let i = 1; i < data.length; i++) {
-    const row = data[i];
-    const key = String(row[idColIndex]).trim().toLowerCase();
-    if (key && !seen.has(key)) {
-      seen.add(key);
-      newData.push(row);
-    } else if (key) {
-      duplicates++;
-    } else {
-      newData.push(row);
-    }
-  }
-  if (duplicates > 0) {
-    sheet.clearContents();
-    sheet.getRange(1, 1, newData.length, newData[0].length).setValues(newData);
-    return `Cleaned up! Removed ${duplicates} duplicates.`;
-  } else {
-    return "No duplicates found in sheet.";
-  }
-}
-
-function handleAttendance(rawText, dateStr, insertAfterHeader, mappingArray) {
-  try {
-    const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-    let lastCol = sheet.getLastColumn();
-    if (lastCol === 0) return { success: false, message: "Sheet empty. Add headers first." };
-    let headers = sheet.getRange(1, 1, 1, lastCol).getDisplayValues()[0].map(h => h.trim());
-    let dateColIndex = headers.indexOf(dateStr.trim());
-    let sheetColIndex = -1;
-    if (dateColIndex === -1) {
-      if (insertAfterHeader === "END") {
-        sheetColIndex = lastCol + 1;
-      } else {
-        const targetIndex = headers.indexOf(insertAfterHeader);
-        if (targetIndex === -1) sheetColIndex = lastCol + 1;
-        else {
-          sheet.insertColumnAfter(targetIndex + 1);
-          sheetColIndex = targetIndex + 2;
-        }
-      }
-      const headerCell = sheet.getRange(1, sheetColIndex);
-      headerCell.setNumberFormat("@");
-      headerCell.setValue(dateStr);
-      SpreadsheetApp.flush();
-      lastCol = sheet.getLastColumn();
-      headers = sheet.getRange(1, 1, 1, lastCol).getDisplayValues()[0].map(h => h.trim());
-      dateColIndex = headers.indexOf(dateStr.trim());
-      if (dateColIndex !== -1) sheetColIndex = dateColIndex + 1;
-    } else {
-      sheetColIndex = dateColIndex + 1;
-    }
-    if (sheetColIndex < 1) sheetColIndex = sheet.getLastColumn() + 1;
-    const primaryKeyHeader = mappingArray[0];
-    const primaryKeyIndex = headers.findIndex(h => h.toLowerCase() === primaryKeyHeader.toLowerCase());
-    if (primaryKeyIndex === -1) return { success: false, message: "Mapped ID column '" + primaryKeyHeader + "' not found." };
-    const mobileKeywords = ['mobile', 'phone', 'contact', 'cell'];
-    let sheetMobileIndex = headers.findIndex(h => mobileKeywords.some(k => h.toLowerCase().includes(k)));
-    let inputMobileIndex = -1;
-    for(let m=0; m<mappingArray.length; m++) {
-       if(mappingArray[m] && mobileKeywords.some(k => mappingArray[m].toLowerCase().includes(k))) {
-         inputMobileIndex = m;
-         break;
-       }
-    }
-    const referenceKeywords = ['reference', 'connected', 'devotee', 'father', 'mother', 'guardian', 'spouse'];
-    const referenceIndices = [];
-    headers.forEach((h, idx) => {
-      if (referenceKeywords.some(k => h.toLowerCase().includes(k))) referenceIndices.push(idx);
-    });
-    const unsafeKeywords = [...referenceKeywords];
-    const safeIndices = [];
-    headers.forEach((h, idx) => {
-      if (!unsafeKeywords.some(bad => h.toLowerCase().includes(bad))) safeIndices.push(idx);
-    });
-    const dataRange = sheet.getDataRange().getValues();
-    const sheetRows = []; 
-    for (let i = 1; i < dataRange.length; i++) {
-      const rowNum = i + 1;
-      const primaryVal = String(dataRange[i][primaryKeyIndex]).trim().toLowerCase();
-      let mobileVal = "";
-      if (sheetMobileIndex !== -1) {
-        mobileVal = String(dataRange[i][sheetMobileIndex]).replace(/\D/g, ''); 
-      }
-      let fuzzyText = "";
-      safeIndices.forEach(colIdx => {
-         const val = String(dataRange[i][colIdx]).trim().toLowerCase();
-         if(val) fuzzyText += " " + val + " ";
-      });
-      let referenceText = "";
-      referenceIndices.forEach(colIdx => {
-         const val = String(dataRange[i][colIdx]).trim().toLowerCase();
-         if(val) referenceText += " " + val;
-      });
-      sheetRows.push({
-        row: rowNum,
-        primary: primaryVal,
-        mobile: mobileVal,
-        fuzzy: fuzzyText,
-        reference: referenceText.trim()
-      });
-    }
-    const rows = rawText.split(/\n/).map(r => r.trim()).filter(r => r !== "");
-    let marked = 0, newAdded = 0;
-    rows.forEach(line => {
-      let parts;
-      if (line.includes('\t')) parts = line.split('\t').map(s => s.trim());
-      else parts = line.split(',').map(s => s.trim());
-      const inputName = parts[0].toLowerCase();
-      if (!inputName) return;
-      let inputMobile = "";
-      if (inputMobileIndex !== -1 && parts.length > inputMobileIndex) {
-         inputMobile = String(parts[inputMobileIndex]).replace(/\D/g, '');
-      }
-      if (inputMobile.length < 10) {
-         for (const part of parts) {
-            const temp = part.replace(/\D/g, '');
-            if (temp.length >= 10) {
-               inputMobile = temp;
-               break;
             }
-         }
-      }
-      const inputTokens = inputName.split(/\s+/).filter(w => w.length > 2);
-      const inputFullText = parts.join(" ").toLowerCase(); 
-      const candidates = [];
-      sheetRows.forEach(row => {
-        let score = 0;
-        let nameScore = 0;
-        if (inputMobile.length >= 10 && row.mobile.length >= 10) {
-           if (row.mobile.includes(inputMobile) || inputMobile.includes(row.mobile)) {
-             score += 100;
-           }
+            return matrix[b.length][a.length];
         }
-        if (row.primary === inputName) {
-           score += 50;
-           nameScore = 50;
-        } else {
-           let tokenMatch = false;
-           for (const token of inputTokens) {
-              if (row.fuzzy.includes(token)) {
-                 tokenMatch = true;
-                 break;
-              }
-           }
-           if (tokenMatch) {
-              score += 20;
-              nameScore = 20;
-           }
+
+        // ✅ AI LOGIC: Find Best Match (Auto-Correct)
+        function getSmartDevoteeName(inputName) {
+            if(!inputName) return "";
+            const cleanInput = inputName.trim();
+            const lowerInput = cleanInput.toLowerCase();
+            
+            const exactMatch = globalDevoteeList.find(d => d.toLowerCase() === lowerInput);
+            if(exactMatch) return exactMatch;
+
+            let bestMatch = null;
+            let minDistance = 3; 
+
+            globalDevoteeList.forEach(existingName => {
+                const dist = levenshtein(lowerInput, existingName.toLowerCase());
+                if (dist < minDistance) {
+                    minDistance = dist;
+                    bestMatch = existingName;
+                }
+            });
+
+            return bestMatch || cleanInput;
         }
-        if (row.reference && row.reference.length > 2) {
-           const refWords = row.reference.split(/\s+/);
-           for (const word of refWords) {
-             if (word.length > 2 && inputFullText.includes(word)) {
-               score += 25;
-               break;
-             }
-           }
-        }
-        if (score > 0) {
-           candidates.push({ row: row.row, score: score, nameScore: nameScore });
-        }
-      });
-      let rowNum = null;
-      if (candidates.length > 0) {
-         candidates.sort((a,b) => b.score - a.score);
-         const best = candidates[0];
-         if (best.score >= 100) {
-            if (best.nameScore > 0) {
-               rowNum = best.row; 
+
+        // ✅ AUTOCOMPLETE / SUGGESTION LOGIC
+        document.getElementById('devotee-manual').addEventListener('input', function() {
+            const val = this.value.toLowerCase();
+            const box = document.getElementById('suggestions-box');
+            if(val.length < 1) { box.classList.add('hidden'); return; }
+
+            const matches = globalDevoteeList.filter(d => d.toLowerCase().includes(val));
+
+            if(matches.length > 0) {
+                box.innerHTML = matches.map(m => 
+                    `<div onclick="selectSuggestion('${m}')" class="p-2 hover:bg-orange-100 cursor-pointer border-b border-gray-50 text-sm font-medium text-gray-700">${m}</div>`
+                ).join('');
+                box.classList.remove('hidden');
             } else {
-               const betterMatch = candidates.find(c => c.score >= 120); 
-               if (betterMatch) {
-                  rowNum = betterMatch.row;
-               } else {
-                  rowNum = null; 
-               }
+                box.classList.add('hidden');
             }
-         } else {
-            const ties = candidates.filter(c => c.score === best.score);
-            if (ties.length === 1 && best.score >= 20) {
-               rowNum = best.row;
+        });
+
+        window.selectSuggestion = function(name) {
+            document.getElementById('devotee-manual').value = name;
+            document.getElementById('suggestions-box').classList.add('hidden');
+        }
+
+        function getFamilyProfiles() { try { return JSON.parse(localStorage.getItem('iskcon_family_list_v9') || '[]'); } catch { return []; } }
+        function saveProfileToMemory(name, contact, homeAddress, devotee, gender) {
+            let profiles = getFamilyProfiles();
+            profiles = profiles.filter(p => p.name.toLowerCase() !== name.trim().toLowerCase());
+            profiles.unshift({ name: name.trim(), contact: contact.trim(), homeAddress: homeAddress.trim(), devotee: devotee.trim(), gender: gender });
+            if(profiles.length > 8) profiles.pop();
+            localStorage.setItem('iskcon_family_list_v9', JSON.stringify(profiles));
+        }
+        window.clearFamilyData = function() { if(confirm("Clear saved list?")) { localStorage.removeItem('iskcon_family_list_v9'); renderFamilyScreen(); } };
+        function hideAll() { Object.values(views).forEach(el => el.classList.add('hidden')); }
+
+        window.renderFamilyScreen = function() {
+            hideAll(); if(!isRegistrationOpen) { views.closed.classList.remove('hidden'); return; }
+            const profiles = getFamilyProfiles();
+            if(profiles.length === 0) { showNewForm(); } else {
+                document.getElementById('family-list').innerHTML = profiles.map((p, index) => `
+                    <div onclick="quickGenerate('${index}')" class="bg-white p-4 rounded-xl border-2 border-orange-50 flex justify-between items-center cursor-pointer hover:border-orange-300 transition shadow-sm group relative overflow-hidden">
+                        <div class="absolute right-0 top-0 h-full w-1 bg-orange-200 group-hover:bg-orange-500 transition-all"></div>
+                        <div class="overflow-hidden pl-2">
+                            <p class="font-bold text-gray-800 text-lg group-hover:text-orange-800 font-serif">${p.name} <span class="text-xs text-gray-400">(${p.gender === 'Male' ? 'M' : 'F'})</span></p>
+                            <p class="text-xs text-gray-500 font-medium">Linked: <span class="text-orange-700">${p.devotee}</span></p>
+                        </div>
+                        <div class="bg-orange-100 text-orange-600 rounded-full p-2 shadow-inner group-hover:bg-orange-600 group-hover:text-white transition mr-2">
+                           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+                        </div>
+                    </div>`).join('');
+                views.family.classList.remove('hidden');
+            }
+        };
+
+        window.showNewForm = function() {
+            hideAll(); if(!isRegistrationOpen) { views.closed.classList.remove('hidden'); return; }
+            const profiles = getFamilyProfiles();
+            document.getElementById('back-to-family-btn').classList.toggle('hidden', profiles.length === 0);
+            
+            const select = document.getElementById('devotee-select');
+            const manual = document.getElementById('devotee-manual');
+            const box = document.getElementById('suggestions-box');
+            
+            document.getElementById('name').value = "";
+            document.getElementById('contact').value = "";
+            document.getElementById('gender').value = ""; 
+            document.getElementById('home_address').value = "";
+            select.value = "";
+            manual.value = "";
+            manual.classList.add('hidden');
+            box.classList.add('hidden'); // hide suggestions
+
+            if(profiles.length > 0) {
+                document.getElementById('home_address').value = profiles[0].homeAddress;
+                const savedDevotee = profiles[0].devotee;
+                let optionFound = false;
+                for (let i = 0; i < select.options.length; i++) {
+                    if (select.options[i].value === savedDevotee) {
+                        select.selectedIndex = i;
+                        optionFound = true;
+                        break;
+                    }
+                }
+                if(!optionFound && savedDevotee) {
+                    select.value = "Other";
+                    manual.value = savedDevotee;
+                    manual.classList.remove('hidden');
+                }
+            } 
+            views.form.classList.remove('hidden');
+        };
+
+        window.toggleManualDevoteeInput = function() {
+            const select = document.getElementById('devotee-select');
+            const manual = document.getElementById('devotee-manual');
+            if(select.value === "Other") {
+                manual.classList.remove('hidden');
+                manual.required = true;
+                manual.focus();
             } else {
-               rowNum = null; 
+                manual.classList.add('hidden');
+                manual.required = false;
+                manual.value = "";
+                document.getElementById('suggestions-box').classList.add('hidden');
             }
-         }
-      }
-      if (rowNum) {
-        sheet.getRange(rowNum, sheetColIndex).setValue("P");
-        marked++;
-        const currentRowVals = sheet.getRange(rowNum, 1, 1, headers.length).getValues()[0];
-        for (let i = 1; i < parts.length; i++) {
-           if (i >= mappingArray.length) break;
-           const headerName = mappingArray[i];
-           if (!headerName) continue;
-           const colIdx = headers.findIndex(h => h.toLowerCase() === headerName.toLowerCase());
-           if (colIdx !== -1) {
-             if (!currentRowVals[colIdx] || currentRowVals[colIdx] === "") {
-               sheet.getRange(rowNum, colIdx + 1).setValue(parts[i]);
-             }
-           }
+        };
+
+        window.renderAdminLogin = function() { hideAll(); views.login.classList.remove('hidden'); };
+        window.renderForm = () => renderFamilyScreen();
+
+        window.quickGenerate = async function(index) {
+            const p = getFamilyProfiles()[index]; if(p) await generateTicket(p.name, p.contact, p.homeAddress, p.devotee, p.gender);
+        };
+
+        function getLocalDateString(isoDate) {
+            if(!isoDate) return "";
+            const d = new Date(isoDate);
+            return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
         }
-      } else {
-        const nextRow = sheet.getLastRow() + 1;
-        const newRowData = new Array(headers.length).fill("");
-        for (let i = 0; i < parts.length; i++) {
-           if (i >= mappingArray.length) break;
-           const headerName = mappingArray[i];
-           if (!headerName) continue;
-           const colIdx = headers.findIndex(h => h.toLowerCase() === headerName.toLowerCase());
-           if (colIdx !== -1) newRowData[colIdx] = parts[i];
+
+        async function generateTicket(name, contact, homeAddress, devoteeArg, genderArg) {
+            if(!userId) { alert("Reloading..."); window.location.reload(); return; }
+            if(!/^\d{10}$/.test(contact)) { alert("Invalid Mobile Number"); return; }
+            const btn = document.querySelector('button:not(.hidden)');
+            const originalText = btn ? btn.innerText : "";
+            if(btn) { btn.disabled = true; btn.innerText = 'Verifying...'; }
+            
+            // Gender Logic
+            let gender = genderArg || document.getElementById('gender').value;
+            if(!gender) { alert("Please select gender."); if(btn) { btn.disabled=false; btn.innerText=originalText; } return; }
+
+            // Devotee Logic with AI
+            let devotee = devoteeArg;
+            if(!devotee) {
+                const select = document.getElementById('devotee-select');
+                const manual = document.getElementById('devotee-manual');
+                let rawDevotee = select.value === "Other" ? manual.value.trim() : select.value;
+                
+                // 🔥 Auto-Correct Logic 🔥
+                devotee = getSmartDevoteeName(rawDevotee);
+                
+                if(!devotee) { alert("Please select a devotee connection."); if(btn) { btn.disabled=false; btn.innerText=originalText; } return; }
+            }
+
+            try {
+                const now = new Date();
+                const todayStr = getLocalDateString(now.toISOString()); 
+                let isDuplicate = false;
+                let existingTimestamp = now.toISOString();
+
+                const q = query(collection(db, `artifacts/${firebaseConfig.projectId}/public/data/attendees`), where("contact", "==", contact.trim()));
+                const snapshot = await getDocs(q);
+                
+                snapshot.forEach(doc => {
+                    const d = doc.data();
+                    const rowDate = getLocalDateString(d.timestamp); 
+                    if (d.name.toLowerCase().trim() === name.toLowerCase().trim() && rowDate === todayStr) {
+                        isDuplicate = true;
+                        existingTimestamp = d.timestamp;
+                    }
+                });
+
+                if (!isDuplicate) {
+                    const timestamp = now.toISOString();
+                    const data = { 
+                        name: name.trim(), contact: contact.trim(), homeAddress: homeAddress.trim(), 
+                        devotee: devotee.trim(), gender: gender,
+                        timestamp, userId,
+                        dateString: todayStr 
+                    };
+                    await setDoc(doc(db, `artifacts/${firebaseConfig.projectId}/users/${userId}/registrations/entryCard`), data);
+                    await addDoc(collection(db, `artifacts/${firebaseConfig.projectId}/public/data/attendees`), data);
+                    existingTimestamp = timestamp;
+                } else {
+                    alert("⚠️ आपकी आज की हाजिरी पहले ही लग चुकी है। (Showing Pass Again)");
+                }
+
+                saveProfileToMemory(name, contact, homeAddress, devotee, gender);
+                
+                document.getElementById('card-name').textContent = name;
+                document.getElementById('card-contact').textContent = contact;
+                document.getElementById('card-home-address').textContent = homeAddress;
+                document.getElementById('card-devotee').textContent = devotee;
+                document.getElementById('card-gender-display').textContent = gender === "Male" ? "M" : "F";
+                
+                const dateObj = new Date(existingTimestamp);
+                document.getElementById('card-timestamp').textContent = dateObj.toLocaleString('en-IN', {
+                    weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true
+                });
+                document.getElementById('card-user-id').textContent = 'ID:' + userId.substring(0,6).toUpperCase();
+                hideAll(); views.card.classList.remove('hidden');
+
+            } catch (e) { 
+                alert("Error: " + e.message); 
+                console.error(e);
+            } finally { if(btn) { btn.disabled = false; btn.innerText = originalText; } }
         }
-        if (dateColIndex < newRowData.length) newRowData[dateColIndex] = "P";
-        else {
-           while(newRowData.length <= dateColIndex) newRowData.push("");
-           newRowData[dateColIndex] = "P";
+
+        document.getElementById('registration-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await generateTicket(
+                document.getElementById('name').value,
+                document.getElementById('contact').value,
+                document.getElementById('home_address').value,
+                null, null
+            );
+        });
+
+        async function init() {
+            app = initializeApp(firebaseConfig); db = getFirestore(app); auth = getAuth(app);
+            
+            onSnapshot(doc(db, `artifacts/${firebaseConfig.projectId}/config/settings`), (snap) => {
+                if(snap.exists()) {
+                    const data = snap.data();
+                    isRegistrationOpen = data.isRegistrationOpen !== false;
+                    const btn = document.getElementById('reg-toggle-btn');
+                    if(btn) { btn.innerText = isRegistrationOpen ? "OPEN" : "CLOSED"; btn.className = isRegistrationOpen ? "px-4 py-1.5 rounded-full text-xs font-extrabold bg-green-600 text-white" : "px-4 py-1.5 rounded-full text-xs font-extrabold bg-red-600 text-white"; }
+                    
+                    const devotees = data.devoteeList || [];
+                    globalDevoteeList = devotees;
+                    
+                    const select = document.getElementById('devotee-select');
+                    const currentVal = select.value;
+                    let html = '<option value="">-- चुनें (Select Name) --</option>';
+                    devotees.forEach(d => { html += `<option value="${d}">${d}</option>`; });
+                    html += '<option value="Other">Other / अन्य (Write Manually)</option>';
+                    select.innerHTML = html;
+                    if(currentVal && (devotees.includes(currentVal) || currentVal === "Other")) select.value = currentVal;
+
+                    const adminText = document.getElementById('admin-devotee-list');
+                    if(adminText) adminText.value = devotees.join('\n');
+                } else {
+                    isRegistrationOpen = true; 
+                }
+                if(!isRegistrationOpen && views.admin.classList.contains('hidden')) renderFamilyScreen();
+            }, (error) => {
+                errorMsg.innerText = "Error: Check Firestore Rules.";
+                errorMsg.classList.remove('hidden');
+            });
+
+            onAuthStateChanged(auth, async (user) => {
+                if (!user) { await signInAnonymously(auth); } 
+                else { 
+                    userId = user.uid; 
+                    const today = new Date();
+                    document.getElementById('admin-date-filter').value = getLocalDateString(today.toISOString());
+                    if(ADMIN_EMAILS.includes(user.email)) { hideAll(); views.admin.classList.remove('hidden'); fetchAttendees(); } 
+                    else { renderFamilyScreen(); } 
+                }
+            });
         }
-        const range = sheet.getRange(nextRow, 1, 1, newRowData.length);
-        range.setValues([newRowData]);
-        range.setFontColor("black");
-        range.setBackground(null);
-        range.setFontWeight("normal");
-        sheetRows.push({ row: nextRow, primary: inputName, mobile: inputMobile, fuzzy: inputName, reference: "" });
-        newAdded++;
-      }
-    });
-    return { success: true, message: `Done! Marked: ${marked}, New: ${newAdded}` };
-  } catch (e) {
-    return { success: false, message: e.toString() };
-  }
-}
+
+        window.saveDevoteeList = async function() {
+            const raw = document.getElementById('admin-devotee-list').value;
+            const list = raw.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+            if(!confirm(`Save ${list.length} names?`)) return;
+            try {
+                await setDoc(doc(db, `artifacts/${firebaseConfig.projectId}/config/settings`), { devoteeList: list }, { merge: true });
+                alert("List Updated!");
+            } catch(e) { alert("Error saving list: " + e.message); }
+        };
+
+        window.fetchAttendees = async function() {
+            const t = document.getElementById('attendee-list'); 
+            const selectedDate = document.getElementById('admin-date-filter').value; 
+            t.innerHTML = '<tr><td class="p-4 text-center">Loading...</td></tr>';
+            try {
+                const s = await getDocs(collection(db, `artifacts/${firebaseConfig.projectId}/public/data/attendees`));
+                currentViewData = [];
+                s.forEach(doc => {
+                    const d = doc.data();
+                    const rowDate = getLocalDateString(d.timestamp); 
+                    if (rowDate === selectedDate) currentViewData.push(d);
+                });
+                currentViewData.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
+                renderTable(currentViewData);
+            } catch { t.innerHTML = '<tr><td>Error loading data</td></tr>'; }
+        }
+
+        window.fetchAllData = async function() {
+            const t = document.getElementById('attendee-list'); 
+            t.innerHTML = '<tr><td class="p-4 text-center">Loading ALL...</td></tr>';
+            try {
+                const s = await getDocs(collection(db, `artifacts/${firebaseConfig.projectId}/public/data/attendees`));
+                currentViewData = [];
+                s.forEach(doc => currentViewData.push(doc.data()));
+                currentViewData.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
+                renderTable(currentViewData);
+            } catch { t.innerHTML = '<tr><td>Error</td></tr>'; }
+        }
+
+        function renderTable(data) {
+            const t = document.getElementById('attendee-list');
+            if (data.length === 0) {
+                t.innerHTML = '<tr><td class="p-4 text-center text-gray-400" colspan="3">No records found.</td></tr>';
+            } else {
+                t.innerHTML = data.map(r => {
+                    const timeOnly = new Date(r.timestamp).toLocaleTimeString('en-US', {hour: '2-digit', minute:'2-digit'});
+                    const g = r.gender === 'Male' ? 'M' : (r.gender === 'Female' ? 'F' : '-');
+                    return `<tr class="hover:bg-orange-50 border-b border-orange-100"><td class="p-3 font-bold">${r.name} <span class="text-gray-400 text-[10px]">(${g})</span></td><td class="p-3 text-xs">${r.contact}</td><td class="p-3 font-medium text-orange-800 text-xs">${r.devotee}</td></tr>`;
+                }).join('');
+            }
+        }
+
+        window.exportToExcel = function() {
+            if (currentViewData.length === 0) { alert("No data to export."); return; }
+            const cleanData = currentViewData.map(r => ({
+                Name: r.name,
+                Gender: r.gender === "Male" ? "M" : (r.gender === "Female" ? "F" : "O"),
+                Contact: r.contact,
+                Address: r.homeAddress,
+                Devotee: r.devotee,
+                Time: new Date(r.timestamp).toLocaleString('en-IN')
+            }));
+            const ws = XLSX.utils.json_to_sheet(cleanData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Attendees");
+            XLSX.writeFile(wb, `Data_${document.getElementById('admin-date-filter').value}.xlsx`);
+        }
+
+        window.downloadCard = async function() {
+            const btn = document.getElementById('download-btn');
+            btn.innerText = "Generating...";
+            btn.disabled = true;
+            await new Promise(resolve => setTimeout(resolve, 500));
+            const c = document.getElementById('entry-card');
+            const canvas = await html2canvas(c, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+            const link = document.createElement('a'); link.href = canvas.toDataURL("image/png"); link.download = `ISKCON_Pass.png`; link.click();
+            btn.innerText = "Download";
+            btn.disabled = false;
+        };
+
+        window.toggleRegistrationStatus = async () => { await setDoc(doc(db, `artifacts/${firebaseConfig.projectId}/config/settings`), {isRegistrationOpen:!isRegistrationOpen}, {merge:true}); };
+        window.handleSignOut = async () => { await signOut(auth); window.location.reload(); };
+        document.getElementById('admin-login-form').addEventListener('submit', async(e)=>{ e.preventDefault(); try { await signInWithEmailAndPassword(auth, document.getElementById('admin-email').value, document.getElementById('admin-password').value); } catch { alert("Wrong email/password"); } });
+        window.clearAllData = async function() {
+            if(!confirm("Are you sure?")) return; const p = prompt("Password:"); if(p !== "prabhupada@108") return alert("Wrong Password!");
+            const b = writeBatch(db); const s = await getDocs(collection(db, `artifacts/${firebaseConfig.projectId}/public/data/attendees`)); s.forEach(d => b.delete(d.ref)); await b.commit(); fetchAttendees(); alert("Cleared!");
+        }
+        
+        setTimeout(() => { if(!views.loading.classList.contains('hidden')) errorMsg.classList.remove('hidden'); }, 8000);
+        init();
+    </script>
+</body>
+</html>
