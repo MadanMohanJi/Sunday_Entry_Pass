@@ -251,4 +251,369 @@
         let globalAddressList = [];
         let siteHeadingText = "ISKCON UJJAIN TEMPLE PASS";
 
-        const views = { loading: document.getElementById('loading-state'), closed: document.getElementById('closed-section'), family: document.getElementById('family-section'), form: document.getElementById('form-section'), card: document.getElementById('card-section'), admin: document.getElementById('admin-dashboard-section'), login: document.g
+        const views = { loading: document.getElementById('loading-state'), closed: document.getElementById('closed-section'), family: document.getElementById('family-section'), form: document.getElementById('form-section'), card: document.getElementById('card-section'), admin: document.getElementById('admin-dashboard-section'), login: document.getElementById('admin-login-section') };
+        const errorMsg = document.getElementById('loading-error');
+        let currentViewData = [];
+
+        // ✅ REUSABLE SEARCHABLE DROPDOWN FUNCTION
+        function setupSearchableDropdown(inputId, listId, dataList) {
+            const input = document.getElementById(inputId);
+            const box = document.getElementById(listId);
+
+            // 1. Show list on focus
+            input.addEventListener('focus', () => {
+                renderList(dataList, inputId, listId);
+                box.classList.remove('hidden');
+            });
+
+            // 2. Filter on type
+            input.addEventListener('input', () => {
+                const val = input.value.toLowerCase();
+                const filtered = dataList.filter(item => item.toLowerCase().includes(val));
+                renderList(filtered, inputId, listId);
+                box.classList.remove('hidden');
+            });
+
+            // 3. Hide on blur (delayed to allow click)
+            input.addEventListener('blur', () => {
+                setTimeout(() => box.classList.add('hidden'), 200);
+            });
+        }
+
+        function renderList(list, inputId, listId) {
+            const box = document.getElementById(listId);
+            if (list.length === 0) {
+                box.innerHTML = '<div class="p-2 text-gray-400 text-xs italic">No match. Typing new entry...</div>';
+            } else {
+                box.innerHTML = list.map(item => `
+                    <div onclick="selectItem('${inputId}', '${item}')" class="suggestion-item">
+                        ${item}
+                    </div>
+                `).join('');
+            }
+        }
+
+        window.selectItem = function(inputId, value) {
+            document.getElementById(inputId).value = value;
+        };
+
+        // LEVENSHTEIN (Fuzzy Match for Auto-Correct)
+        function levenshtein(a, b) {
+            const matrix = [];
+            for (let i = 0; i <= b.length; i++) matrix[i] = [i];
+            for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
+            for (let i = 1; i <= b.length; i++) {
+                for (let j = 1; j <= a.length; j++) {
+                    if (b.charAt(i - 1) == a.charAt(j - 1)) {
+                        matrix[i][j] = matrix[i - 1][j - 1];
+                    } else {
+                        matrix[i][j] = Math.min(matrix[i - 1][j - 1] + 1, Math.min(matrix[i][j - 1] + 1, matrix[i - 1][j] + 1));
+                    }
+                }
+            }
+            return matrix[b.length][a.length];
+        }
+
+        function getSmartMatch(inputName, list) {
+            if(!inputName) return "";
+            const cleanInput = inputName.trim();
+            const lowerInput = cleanInput.toLowerCase();
+            const exactMatch = list.find(d => d.toLowerCase() === lowerInput);
+            if(exactMatch) return exactMatch;
+            let bestMatch = null;
+            let minDistance = 3; 
+            list.forEach(existingName => {
+                const dist = levenshtein(lowerInput, existingName.toLowerCase());
+                if (dist < minDistance) { minDistance = dist; bestMatch = existingName; }
+            });
+            return bestMatch || cleanInput;
+        }
+
+        function getFamilyProfiles() { try { return JSON.parse(localStorage.getItem('iskcon_family_list_v11') || '[]'); } catch { return []; } }
+        function saveProfileToMemory(name, contact, homeAddress, devotee, gender, age) {
+            let profiles = getFamilyProfiles();
+            profiles = profiles.filter(p => p.name.toLowerCase() !== name.trim().toLowerCase());
+            profiles.unshift({ name: name.trim(), contact: contact.trim(), homeAddress: homeAddress.trim(), devotee: devotee.trim(), gender: gender, age: age });
+            if(profiles.length > 8) profiles.pop();
+            localStorage.setItem('iskcon_family_list_v11', JSON.stringify(profiles));
+        }
+        window.clearFamilyData = function() { if(confirm("Clear saved list?")) { localStorage.removeItem('iskcon_family_list_v11'); renderFamilyScreen(); } };
+        function hideAll() { Object.values(views).forEach(el => el.classList.add('hidden')); }
+
+        window.renderFamilyScreen = function() {
+            hideAll(); if(!isRegistrationOpen) { views.closed.classList.remove('hidden'); return; }
+            const profiles = getFamilyProfiles();
+            if(profiles.length === 0) { showNewForm(); } else {
+                document.getElementById('family-list').innerHTML = profiles.map((p, index) => `
+                    <div onclick="quickGenerate('${index}')" class="bg-white p-4 rounded-xl border-2 border-orange-50 flex justify-between items-center cursor-pointer hover:border-orange-300 transition shadow-sm group relative overflow-hidden">
+                        <div class="absolute right-0 top-0 h-full w-1 bg-orange-200 group-hover:bg-orange-500 transition-all"></div>
+                        <div class="overflow-hidden pl-2">
+                            <p class="font-bold text-gray-800 text-lg group-hover:text-orange-800 font-serif">${p.name} <span class="text-xs text-gray-400">(${p.gender === 'Male' ? 'M' : 'F'}, ${p.age || '-'})</span></p>
+                            <p class="text-xs text-gray-500 font-medium truncate max-w-[200px]">${p.homeAddress}</p>
+                        </div>
+                        <div class="bg-orange-100 text-orange-600 rounded-full p-2 shadow-inner group-hover:bg-orange-600 group-hover:text-white transition mr-2">
+                           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+                        </div>
+                    </div>`).join('');
+                views.family.classList.remove('hidden');
+            }
+        };
+
+        window.showNewForm = function() {
+            hideAll(); if(!isRegistrationOpen) { views.closed.classList.remove('hidden'); return; }
+            const profiles = getFamilyProfiles();
+            document.getElementById('back-to-family-btn').classList.toggle('hidden', profiles.length === 0);
+            
+            document.getElementById('name').value = "";
+            document.getElementById('contact').value = "";
+            document.getElementById('gender').value = ""; 
+            document.getElementById('age').value = "";
+            document.getElementById('address-input').value = "";
+            document.getElementById('devotee-input').value = "";
+
+            if(profiles.length > 0) {
+                // Auto fill address if available
+                document.getElementById('address-input').value = profiles[0].homeAddress;
+                // Auto fill devotee if available
+                document.getElementById('devotee-input').value = profiles[0].devotee;
+            } 
+            views.form.classList.remove('hidden');
+        };
+
+        window.renderAdminLogin = function() { hideAll(); views.login.classList.remove('hidden'); };
+        window.renderForm = () => renderFamilyScreen();
+
+        window.quickGenerate = async function(index) {
+            const p = getFamilyProfiles()[index]; 
+            if(p) await generateTicket(p.name, p.contact, p.homeAddress, p.devotee, p.gender, p.age);
+        };
+
+        function getLocalDateString(isoDate) {
+            if(!isoDate) return "";
+            const d = new Date(isoDate);
+            return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+        }
+
+        async function generateTicket(name, contact, addressArg, devoteeArg, genderArg, ageArg) {
+            if(!userId) { alert("Reloading..."); window.location.reload(); return; }
+            if(!/^\d{10}$/.test(contact)) { alert("Invalid Mobile Number"); return; }
+            const btn = document.querySelector('button:not(.hidden)');
+            const originalText = btn ? btn.innerText : "";
+            if(btn) { btn.disabled = true; btn.innerText = 'Verifying...'; }
+            
+            let gender = genderArg || document.getElementById('gender').value;
+            let age = ageArg || document.getElementById('age').value;
+            if(!gender || !age) { alert("Complete all fields."); if(btn) { btn.disabled=false; btn.innerText=originalText; } return; }
+
+            // AUTO-CORRECT & READ INPUTS
+            let address = addressArg || document.getElementById('address-input').value;
+            address = getSmartMatch(address, globalAddressList);
+            if(!address) { alert("Enter Address"); if(btn) { btn.disabled=false; btn.innerText=originalText; } return; }
+
+            let devotee = devoteeArg || document.getElementById('devotee-input').value;
+            devotee = getSmartMatch(devotee, globalDevoteeList);
+            if(!devotee) { alert("Enter Devotee Connection"); if(btn) { btn.disabled=false; btn.innerText=originalText; } return; }
+
+            try {
+                const now = new Date();
+                const todayStr = getLocalDateString(now.toISOString()); 
+                let isDuplicate = false;
+                let existingTimestamp = now.toISOString();
+
+                const q = query(collection(db, `artifacts/${firebaseConfig.projectId}/public/data/attendees`), where("contact", "==", contact.trim()));
+                const snapshot = await getDocs(q);
+                snapshot.forEach(doc => {
+                    const d = doc.data();
+                    const rowDate = getLocalDateString(d.timestamp); 
+                    if (d.name.toLowerCase().trim() === name.toLowerCase().trim() && rowDate === todayStr) {
+                        isDuplicate = true;
+                        existingTimestamp = d.timestamp;
+                    }
+                });
+
+                if (!isDuplicate) {
+                    const timestamp = now.toISOString();
+                    const data = { 
+                        name: name.trim(), contact: contact.trim(), homeAddress: address.trim(), 
+                        devotee: devotee.trim(), gender: gender, age: age,
+                        timestamp, userId,
+                        dateString: todayStr 
+                    };
+                    await setDoc(doc(db, `artifacts/${firebaseConfig.projectId}/users/${userId}/registrations/entryCard`), data);
+                    await addDoc(collection(db, `artifacts/${firebaseConfig.projectId}/public/data/attendees`), data);
+                    existingTimestamp = timestamp;
+                } else {
+                    alert("⚠️ पास पहले ही बना हुआ है। (Showing Pass)");
+                }
+
+                saveProfileToMemory(name, contact, address, devotee, gender, age);
+                
+                document.getElementById('card-name').textContent = name;
+                document.getElementById('card-contact').textContent = contact;
+                document.getElementById('card-home-address').textContent = address;
+                document.getElementById('card-devotee').textContent = devotee;
+                document.getElementById('card-gender-display').textContent = gender === "Male" ? "M" : "F";
+                document.getElementById('card-age-display').textContent = age + " Yrs";
+                
+                const dateObj = new Date(existingTimestamp);
+                document.getElementById('card-timestamp').textContent = dateObj.toLocaleString('en-IN', {
+                    weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true
+                });
+                document.getElementById('card-user-id').textContent = 'ID:' + userId.substring(0,6).toUpperCase();
+                hideAll(); views.card.classList.remove('hidden');
+
+            } catch (e) { alert("Error: " + e.message); } 
+            finally { if(btn) { btn.disabled = false; btn.innerText = originalText; } }
+        }
+
+        document.getElementById('registration-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await generateTicket(
+                document.getElementById('name').value,
+                document.getElementById('contact').value,
+                null, null, null, null
+            );
+        });
+
+        async function init() {
+            app = initializeApp(firebaseConfig); db = getFirestore(app); auth = getAuth(app);
+            
+            onSnapshot(doc(db, `artifacts/${firebaseConfig.projectId}/config/settings`), (snap) => {
+                if(snap.exists()) {
+                    const data = snap.data();
+                    
+                    siteHeadingText = data.siteHeading || "ISKCON UJJAIN TEMPLE PASS";
+                    document.getElementById('site-heading-display').innerText = siteHeadingText;
+                    document.getElementById('card-heading-display').innerText = siteHeadingText;
+                    document.getElementById('admin-heading-input').value = siteHeadingText;
+
+                    globalDevoteeList = data.devoteeList || [];
+                    document.getElementById('admin-devotee-list').value = globalDevoteeList.join('\n');
+                    
+                    globalAddressList = data.addressList || [];
+                    document.getElementById('admin-address-list').value = globalAddressList.join('\n');
+
+                    // Bind Smart Search
+                    setupSearchableDropdown('devotee-input', 'devotee-list-box', globalDevoteeList);
+                    setupSearchableDropdown('address-input', 'address-list-box', globalAddressList);
+
+                    isRegistrationOpen = data.isRegistrationOpen !== false;
+                    const btn = document.getElementById('reg-toggle-btn');
+                    if(btn) { btn.innerText = isRegistrationOpen ? "OPEN" : "CLOSED"; btn.className = isRegistrationOpen ? "px-4 py-1.5 rounded-full text-xs font-extrabold bg-green-600 text-white" : "px-4 py-1.5 rounded-full text-xs font-extrabold bg-red-600 text-white"; }
+
+                } else { isRegistrationOpen = true; }
+                if(!isRegistrationOpen && views.admin.classList.contains('hidden')) renderFamilyScreen();
+            }, (error) => {
+                errorMsg.innerText = "Error loading config.";
+                errorMsg.classList.remove('hidden');
+            });
+
+            onAuthStateChanged(auth, async (user) => {
+                if (!user) { await signInAnonymously(auth); } 
+                else { 
+                    userId = user.uid; 
+                    const today = new Date();
+                    document.getElementById('admin-date-filter').value = getLocalDateString(today.toISOString());
+                    if(ADMIN_EMAILS.includes(user.email)) { hideAll(); views.admin.classList.remove('hidden'); fetchAttendees(); } 
+                    else { renderFamilyScreen(); } 
+                }
+            });
+        }
+
+        // SAVE FUNCTIONS
+        window.saveDevoteeList = async function() {
+            const list = document.getElementById('admin-devotee-list').value.split('\n').map(s=>s.trim()).filter(s=>s.length>0);
+            if(confirm("Save List?")) await setDoc(doc(db, `artifacts/${firebaseConfig.projectId}/config/settings`), { devoteeList: list }, { merge: true });
+        };
+        window.saveAddressList = async function() {
+            const list = document.getElementById('admin-address-list').value.split('\n').map(s=>s.trim()).filter(s=>s.length>0);
+            if(confirm("Save List?")) await setDoc(doc(db, `artifacts/${firebaseConfig.projectId}/config/settings`), { addressList: list }, { merge: true });
+        };
+        window.saveSiteHeading = async function() {
+            const val = document.getElementById('admin-heading-input').value.trim();
+            if(confirm("Change Heading?")) await setDoc(doc(db, `artifacts/${firebaseConfig.projectId}/config/settings`), { siteHeading: val }, { merge: true });
+        };
+
+        window.fetchAttendees = async function() {
+            const t = document.getElementById('attendee-list'); 
+            const selectedDate = document.getElementById('admin-date-filter').value; 
+            t.innerHTML = '<tr><td class="p-4 text-center">Loading...</td></tr>';
+            try {
+                const s = await getDocs(collection(db, `artifacts/${firebaseConfig.projectId}/public/data/attendees`));
+                currentViewData = [];
+                s.forEach(doc => {
+                    const d = doc.data();
+                    const rowDate = getLocalDateString(d.timestamp); 
+                    if (rowDate === selectedDate) currentViewData.push(d);
+                });
+                currentViewData.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
+                renderTable(currentViewData);
+            } catch { t.innerHTML = '<tr><td>Error loading data</td></tr>'; }
+        }
+
+        window.fetchAllData = async function() {
+            const t = document.getElementById('attendee-list'); 
+            t.innerHTML = '<tr><td class="p-4 text-center">Loading ALL...</td></tr>';
+            try {
+                const s = await getDocs(collection(db, `artifacts/${firebaseConfig.projectId}/public/data/attendees`));
+                currentViewData = [];
+                s.forEach(doc => currentViewData.push(doc.data()));
+                currentViewData.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
+                renderTable(currentViewData);
+            } catch { t.innerHTML = '<tr><td>Error</td></tr>'; }
+        }
+
+        function renderTable(data) {
+            const t = document.getElementById('attendee-list');
+            if (data.length === 0) {
+                t.innerHTML = '<tr><td class="p-4 text-center text-gray-400" colspan="3">No records found.</td></tr>';
+            } else {
+                t.innerHTML = data.map(r => {
+                    const g = r.gender === 'Male' ? 'M' : (r.gender === 'Female' ? 'F' : '-');
+                    return `<tr class="hover:bg-orange-50 border-b border-orange-100"><td class="p-3 font-bold text-xs">${r.name} (${g}, ${r.age||'-'})</td><td class="p-3 text-xs">${r.contact}</td><td class="p-3 text-xs truncate max-w-[100px]">${r.homeAddress}</td></tr>`;
+                }).join('');
+            }
+        }
+
+        window.exportToExcel = function() {
+            if (currentViewData.length === 0) { alert("No data to export."); return; }
+            const cleanData = currentViewData.map(r => ({
+                Name: r.name,
+                Gender: r.gender === "Male" ? "M" : (r.gender === "Female" ? "F" : "O"),
+                Age: r.age || "",
+                Contact: r.contact,
+                Address: r.homeAddress,
+                Devotee: r.devotee,
+                Time: new Date(r.timestamp).toLocaleString('en-IN')
+            }));
+            const ws = XLSX.utils.json_to_sheet(cleanData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Attendees");
+            XLSX.writeFile(wb, `Data_${document.getElementById('admin-date-filter').value}.xlsx`);
+        }
+
+        window.downloadCard = async function() {
+            const btn = document.getElementById('download-btn');
+            btn.innerText = "Generating...";
+            btn.disabled = true;
+            await new Promise(resolve => setTimeout(resolve, 500));
+            const c = document.getElementById('entry-card');
+            const canvas = await html2canvas(c, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+            const link = document.createElement('a'); link.href = canvas.toDataURL("image/png"); link.download = `ISKCON_Pass.png`; link.click();
+            btn.innerText = "Download";
+            btn.disabled = false;
+        };
+
+        window.toggleRegistrationStatus = async () => { await setDoc(doc(db, `artifacts/${firebaseConfig.projectId}/config/settings`), {isRegistrationOpen:!isRegistrationOpen}, {merge:true}); };
+        window.handleSignOut = async () => { await signOut(auth); window.location.reload(); };
+        document.getElementById('admin-login-form').addEventListener('submit', async(e)=>{ e.preventDefault(); try { await signInWithEmailAndPassword(auth, document.getElementById('admin-email').value, document.getElementById('admin-password').value); } catch { alert("Wrong email/password"); } });
+        window.clearAllData = async function() {
+            if(!confirm("Are you sure?")) return; const p = prompt("Password:"); if(p !== "prabhupada@108") return alert("Wrong Password!");
+            const b = writeBatch(db); const s = await getDocs(collection(db, `artifacts/${firebaseConfig.projectId}/public/data/attendees`)); s.forEach(d => b.delete(d.ref)); await b.commit(); fetchAttendees(); alert("Cleared!");
+        }
+        
+        setTimeout(() => { if(!views.loading.classList.contains('hidden')) errorMsg.classList.remove('hidden'); }, 8000);
+        init();
+    </script>
+</body>
+</html>
