@@ -34,29 +34,57 @@
             height: 20px;
         }
 
+        /* ✅ NEW DROPDOWN STYLING */
+        .custom-dropdown {
+            display: flex;
+            flex-direction: column;
+            max-height: 250px; /* Fixed Height */
+            background: white;
+            border: 1px solid #fed7aa;
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            position: absolute;
+            z-index: 50;
+            width: 100%;
+            top: 100%;
+            left: 0;
+        }
+
+        /* Scrollable Area for Names */
+        .dropdown-list-area {
+            overflow-y: auto;
+            flex-grow: 1; /* Takes remaining space */
+        }
+
         .suggestion-item {
             padding: 12px;
             cursor: pointer;
             border-bottom: 1px solid #f3f4f6;
             font-size: 14px;
             color: #374151;
-            transition: background 0.2s;
         }
         .suggestion-item:hover {
             background-color: #ffedd5;
             color: #c2410c;
-            font-weight: 500;
+            font-weight: bold;
         }
-        .manual-entry-item {
+
+        /* ✅ STICKY FOOTER FOR MANUAL ENTRY */
+        .dropdown-footer {
+            border-top: 2px solid #fed7aa;
+            background-color: #fff7ed;
             padding: 12px;
             cursor: pointer;
-            background-color: #fff7ed;
-            color: #c2410c;
+            color: #c2410c; /* Dark Orange */
             font-weight: bold;
-            border-top: 2px solid #fed7aa;
             font-size: 14px;
+            text-align: center;
+            flex-shrink: 0; /* Don't shrink */
         }
-        .manual-entry-item:hover { background-color: #fed7aa; }
+        .dropdown-footer:hover {
+            background-color: #fed7aa;
+            color: #7c2d12;
+        }
 
         input[type="text"] { text-transform: capitalize; }
     </style>
@@ -133,13 +161,23 @@
                     <div class="group relative">
                         <label class="block text-xs font-bold text-orange-800 uppercase mb-1">घर का पता (Address)</label>
                         <input type="text" id="address-input" required placeholder="पता खोजें या लिखें..." class="w-full p-3 bg-orange-50/50 border-b-2 border-orange-200 focus:border-orange-600 outline-none transition rounded-t-md text-gray-800">
-                        <div id="address-list-box" class="hidden absolute z-50 w-full bg-white border border-gray-200 rounded-b-lg shadow-xl max-h-48 overflow-y-auto top-full left-0"></div>
+                        <div id="address-list-box" class="hidden custom-dropdown">
+                            <div id="address-scroll-area" class="dropdown-list-area"></div>
+                            <div id="address-manual-btn" class="dropdown-footer">
+                                ✍️ नया पता लिखें (Add Manually)
+                            </div>
+                        </div>
                     </div>
                     
                     <div class="group relative">
                         <label class="block text-xs font-bold text-orange-800 uppercase mb-1">मंदिर में किससे जुड़े हैं?</label>
                         <input type="text" id="devotee-input" required placeholder="भक्त का नाम खोजें या लिखें..." class="w-full p-3 bg-orange-50/50 border-b-2 border-orange-200 focus:border-orange-600 outline-none transition rounded-t-md text-gray-800">
-                        <div id="devotee-list-box" class="hidden absolute z-50 w-full bg-white border border-gray-200 rounded-b-lg shadow-xl max-h-48 overflow-y-auto top-full left-0"></div>
+                        <div id="devotee-list-box" class="hidden custom-dropdown">
+                            <div id="devotee-scroll-area" class="dropdown-list-area"></div>
+                            <div id="devotee-manual-btn" class="dropdown-footer">
+                                ✍️ नया नाम लिखें (Add Manually)
+                            </div>
+                        </div>
                     </div>
 
                     <button type="submit" id="submit-button" class="w-full mt-4 bg-orange-700 text-white py-3.5 rounded-lg font-bold shadow-md hover:bg-orange-800 transition-transform active:scale-95 flex items-center justify-center">हरे कृष्ण (Get Pass)</button>
@@ -263,7 +301,7 @@
         const errorMsg = document.getElementById('loading-error');
         let currentViewData = [];
 
-        // ✅ HINDI-TO-ENGLISH PHONETIC MAP (Simplified for Matching)
+        // HINDI TRANSILITERATION MAP
         const translitMap = {
             'क': 'k', 'ख': 'kh', 'ग': 'g', 'घ': 'gh', 'ङ': 'n',
             'च': 'ch', 'छ': 'chh', 'ज': 'j', 'झ': 'jh', 'ञ': 'n',
@@ -277,82 +315,82 @@
             'ं': 'n', 'ः': 'h', '्': ''
         };
 
-        // Helper: Convert Hindi string to Phonetic English (Skeleton)
         function getPhoneticSkeleton(str) {
             if (!str) return "";
             let eng = "";
             for (let i = 0; i < str.length; i++) {
                 let char = str[i];
-                eng += translitMap[char] || char; // Map Hindi or keep English
+                eng += translitMap[char] || char; 
             }
-            // Remove vowels from English to create "Skeleton" (e.g. Krishna -> krshn)
             return eng.toLowerCase().replace(/[aeiou]/g, '');
         }
 
-        // ✅ AI SEARCH LOGIC (Phonetic + Substring)
-        function setupSearchableDropdown(inputId, listId, dataList) {
+        // ✅ FIXED: SEPARATE LIST AND STICKY FOOTER LOGIC
+        function setupSearchableDropdown(inputId, listBoxId, listAreaId, footerBtnId, dataList) {
             const input = document.getElementById(inputId);
-            const box = document.getElementById(listId);
+            const box = document.getElementById(listBoxId);
+            const listArea = document.getElementById(listAreaId);
+            const footer = document.getElementById(footerBtnId);
 
+            // Open Dropdown
             input.addEventListener('focus', () => {
-                renderList(dataList, input, box);
+                renderList(dataList, inputId, listArea);
+                updateFooter(footer, inputId, input.value);
                 box.classList.remove('hidden');
             });
 
+            // Filter List
             input.addEventListener('input', () => {
                 const rawVal = input.value.toLowerCase().trim();
-                if(rawVal === "") { renderList(dataList, input, box); return; }
-
-                const inputSkeleton = getPhoneticSkeleton(rawVal); // Get Skeleton of Input
-
+                const skeleton = getPhoneticSkeleton(rawVal);
+                
                 const filtered = dataList.filter(item => {
-                    const itemLower = item.toLowerCase();
-                    const itemSkeleton = getPhoneticSkeleton(item); // Get Skeleton of List Item
-                    
-                    // Match 1: Direct Substring (English-English)
-                    if (itemLower.includes(rawVal)) return true;
-                    
-                    // Match 2: Phonetic Skeleton Match (Hindi-English / English-Hindi)
-                    // Allows "Krishn" to match "Krishna"
-                    if (itemSkeleton.includes(inputSkeleton)) return true;
-
-                    return false;
+                    if(!rawVal) return true;
+                    return item.toLowerCase().includes(rawVal) || getPhoneticSkeleton(item).includes(skeleton);
                 });
-                renderList(filtered, input, box);
+                
+                renderList(filtered, inputId, listArea);
+                updateFooter(footer, inputId, input.value);
                 box.classList.remove('hidden');
             });
 
-            input.addEventListener('blur', () => {
+            // Footer Click Logic (Manual Entry)
+            footer.addEventListener('mousedown', (e) => { // Use mousedown to prevent blur
+                e.preventDefault();
+                box.classList.add('hidden');
+            });
+
+            // Hide on Blur
+            input.addEventListener('blur', (e) => {
                 setTimeout(() => box.classList.add('hidden'), 200);
             });
         }
 
-        function renderList(list, inputElement, boxElement) {
-            let html = '';
-            
-            if (list.length > 0) {
-                html += list.map(item => `
-                    <div onclick="selectItem('${inputElement.id}', '${item}')" class="suggestion-item">
+        function renderList(list, inputId, container) {
+            if (list.length === 0) {
+                container.innerHTML = '<div class="p-4 text-center text-gray-400 text-xs italic">No matching name in list.</div>';
+            } else {
+                container.innerHTML = list.map(item => `
+                    <div onclick="selectItem('${inputId}', '${item}')" class="suggestion-item">
                         ${item}
                     </div>
                 `).join('');
             }
+        }
 
-            // Manual Entry Option at BOTTOM
-            const currentVal = inputElement.value;
-            if(currentVal.length > 0) {
-                html += `
-                    <div onclick="selectItem('${inputElement.id}', '${currentVal}')" class="manual-entry-item">
-                        📝 Use "${currentVal}" (Write Manually / नया लिखें)
-                    </div>
-                `;
+        function updateFooter(footerEl, inputId, text) {
+            if(text.trim().length > 0) {
+                footerEl.innerHTML = `✍️ Use "${text}" (Add Manually)`;
+            } else {
+                footerEl.innerHTML = `✍️ Add New Name`;
             }
-
-            boxElement.innerHTML = html;
         }
 
         window.selectItem = function(inputId, value) {
             document.getElementById(inputId).value = value;
+            // Hide parent box
+            if(inputId === 'address-input') document.getElementById('address-list-box').classList.add('hidden');
+            if(inputId === 'devotee-input') document.getElementById('devotee-list-box').classList.add('hidden');
         };
 
         function getFamilyProfiles() { try { return JSON.parse(localStorage.getItem('iskcon_family_list_v12') || '[]'); } catch { return []; } }
@@ -428,11 +466,16 @@
             let gender = genderArg || document.getElementById('gender').value;
             let age = ageArg || document.getElementById('age').value;
             
-            // Get values directly from search inputs if not passed
             let address = addressArg || document.getElementById('address-input').value.trim();
             let devotee = devoteeArg || document.getElementById('devotee-input').value.trim();
 
             if(!gender || !age || !address || !devotee) { alert("Complete all fields."); if(btn) { btn.disabled=false; btn.innerText=originalText; } return; }
+
+            // Auto-Correct Logic
+            const smartAddress = getSmartMatch(address, globalAddressList);
+            const smartDevotee = getSmartMatch(devotee, globalDevoteeList);
+            address = smartAddress || address;
+            devotee = smartDevotee || devotee;
 
             try {
                 const now = new Date();
@@ -513,9 +556,9 @@
                     globalAddressList = data.addressList || [];
                     document.getElementById('admin-address-list').value = globalAddressList.join('\n');
 
-                    // Bind Smart Search (Re-bind to ensure updates)
-                    setupSearchableDropdown('devotee-input', 'devotee-list-box', globalDevoteeList);
-                    setupSearchableDropdown('address-input', 'address-list-box', globalAddressList);
+                    // Bind Dropdowns
+                    setupSearchableDropdown('devotee-input', 'devotee-list-box', 'devotee-scroll-area', 'devotee-manual-btn', globalDevoteeList);
+                    setupSearchableDropdown('address-input', 'address-list-box', 'address-scroll-area', 'address-manual-btn', globalAddressList);
 
                     isRegistrationOpen = data.isRegistrationOpen !== false;
                     const btn = document.getElementById('reg-toggle-btn');
