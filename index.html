@@ -34,54 +34,53 @@
             height: 20px;
         }
 
-        /* ✅ NEW DROPDOWN STYLING */
-        .custom-dropdown {
-            display: flex;
-            flex-direction: column;
-            max-height: 250px; /* Fixed Height */
-            background: white;
-            border: 1px solid #fed7aa;
-            border-radius: 0 0 8px 8px;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        /* ✅ GOOGLE STYLE DROPDOWN */
+        .google-dropdown {
             position: absolute;
-            z-index: 50;
-            width: 100%;
             top: 100%;
             left: 0;
-        }
-
-        /* Scrollable Area for Names */
-        .dropdown-list-area {
+            width: 100%;
+            background: white;
+            border: 1px solid #ddd;
+            border-top: none;
+            border-radius: 0 0 12px 12px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            z-index: 50;
+            max-height: 250px;
             overflow-y: auto;
-            flex-grow: 1; /* Takes remaining space */
+            display: none; /* Hidden by default */
         }
-
+        
+        /* List Items */
         .suggestion-item {
-            padding: 12px;
+            padding: 12px 16px;
             cursor: pointer;
             border-bottom: 1px solid #f3f4f6;
             font-size: 14px;
             color: #374151;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         .suggestion-item:hover {
             background-color: #ffedd5;
             color: #c2410c;
-            font-weight: bold;
         }
 
-        /* ✅ STICKY FOOTER FOR MANUAL ENTRY */
-        .dropdown-footer {
-            border-top: 2px solid #fed7aa;
-            background-color: #fff7ed;
-            padding: 12px;
+        /* Manual Entry (Last Item) */
+        .manual-entry-item {
+            padding: 14px 16px;
             cursor: pointer;
-            color: #c2410c; /* Dark Orange */
+            background-color: #fffbeb; /* Light yellow tint */
+            color: #d97706;
             font-weight: bold;
             font-size: 14px;
-            text-align: center;
-            flex-shrink: 0; /* Don't shrink */
+            border-top: 2px solid #fed7aa;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
-        .dropdown-footer:hover {
+        .manual-entry-item:hover {
             background-color: #fed7aa;
             color: #7c2d12;
         }
@@ -160,24 +159,24 @@
                     
                     <div class="group relative">
                         <label class="block text-xs font-bold text-orange-800 uppercase mb-1">घर का पता (Address)</label>
-                        <input type="text" id="address-input" required placeholder="पता खोजें या लिखें..." class="w-full p-3 bg-orange-50/50 border-b-2 border-orange-200 focus:border-orange-600 outline-none transition rounded-t-md text-gray-800">
-                        <div id="address-list-box" class="hidden custom-dropdown">
-                            <div id="address-scroll-area" class="dropdown-list-area"></div>
-                            <div id="address-manual-btn" class="dropdown-footer">
-                                ✍️ नया पता लिखें (Add Manually)
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                             </div>
+                            <input type="text" id="address-input" required placeholder="Search or Type Address..." class="w-full pl-10 p-3 bg-orange-50/50 border-b-2 border-orange-200 focus:border-orange-600 outline-none transition rounded-t-md text-gray-800 placeholder-gray-500">
                         </div>
+                        <div id="address-list-box" class="google-dropdown"></div>
                     </div>
                     
                     <div class="group relative">
                         <label class="block text-xs font-bold text-orange-800 uppercase mb-1">मंदिर में किससे जुड़े हैं?</label>
-                        <input type="text" id="devotee-input" required placeholder="भक्त का नाम खोजें या लिखें..." class="w-full p-3 bg-orange-50/50 border-b-2 border-orange-200 focus:border-orange-600 outline-none transition rounded-t-md text-gray-800">
-                        <div id="devotee-list-box" class="hidden custom-dropdown">
-                            <div id="devotee-scroll-area" class="dropdown-list-area"></div>
-                            <div id="devotee-manual-btn" class="dropdown-footer">
-                                ✍️ नया नाम लिखें (Add Manually)
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                             </div>
+                            <input type="text" id="devotee-input" required placeholder="Search Reference Name..." class="w-full pl-10 p-3 bg-orange-50/50 border-b-2 border-orange-200 focus:border-orange-600 outline-none transition rounded-t-md text-gray-800 placeholder-gray-500">
                         </div>
+                        <div id="devotee-list-box" class="google-dropdown"></div>
                     </div>
 
                     <button type="submit" id="submit-button" class="w-full mt-4 bg-orange-700 text-white py-3.5 rounded-lg font-bold shadow-md hover:bg-orange-800 transition-transform active:scale-95 flex items-center justify-center">हरे कृष्ण (Get Pass)</button>
@@ -325,21 +324,18 @@
             return eng.toLowerCase().replace(/[aeiou]/g, '');
         }
 
-        // ✅ FIXED: SEPARATE LIST AND STICKY FOOTER LOGIC
-        function setupSearchableDropdown(inputId, listBoxId, listAreaId, footerBtnId, dataList) {
+        // ✅ GOOGLE STYLE SEARCH LOGIC
+        function setupSearchableDropdown(inputId, listId, dataList) {
             const input = document.getElementById(inputId);
-            const box = document.getElementById(listBoxId);
-            const listArea = document.getElementById(listAreaId);
-            const footer = document.getElementById(footerBtnId);
+            const box = document.getElementById(listId);
 
-            // Open Dropdown
+            // Show list on focus
             input.addEventListener('focus', () => {
-                renderList(dataList, inputId, listArea);
-                updateFooter(footer, inputId, input.value);
-                box.classList.remove('hidden');
+                renderList(dataList, input, box);
+                box.style.display = 'block';
             });
 
-            // Filter List
+            // Filter on type
             input.addEventListener('input', () => {
                 const rawVal = input.value.toLowerCase().trim();
                 const skeleton = getPhoneticSkeleton(rawVal);
@@ -349,48 +345,45 @@
                     return item.toLowerCase().includes(rawVal) || getPhoneticSkeleton(item).includes(skeleton);
                 });
                 
-                renderList(filtered, inputId, listArea);
-                updateFooter(footer, inputId, input.value);
-                box.classList.remove('hidden');
+                renderList(filtered, input, box);
+                box.style.display = 'block';
             });
 
-            // Footer Click Logic (Manual Entry)
-            footer.addEventListener('mousedown', (e) => { // Use mousedown to prevent blur
-                e.preventDefault();
-                box.classList.add('hidden');
-            });
-
-            // Hide on Blur
+            // Hide on blur
             input.addEventListener('blur', (e) => {
-                setTimeout(() => box.classList.add('hidden'), 200);
+                setTimeout(() => box.style.display = 'none', 200);
             });
         }
 
-        function renderList(list, inputId, container) {
-            if (list.length === 0) {
-                container.innerHTML = '<div class="p-4 text-center text-gray-400 text-xs italic">No matching name in list.</div>';
-            } else {
-                container.innerHTML = list.map(item => `
-                    <div onclick="selectItem('${inputId}', '${item}')" class="suggestion-item">
-                        ${item}
+        function renderList(list, inputElement, boxElement) {
+            let html = '';
+            
+            // 1. Matches
+            if (list.length > 0) {
+                html += list.map(item => `
+                    <div onclick="selectItem('${inputElement.id}', '${item}')" class="suggestion-item">
+                        <span>👤</span> ${item}
                     </div>
                 `).join('');
             }
-        }
 
-        function updateFooter(footerEl, inputId, text) {
-            if(text.trim().length > 0) {
-                footerEl.innerHTML = `✍️ Use "${text}" (Add Manually)`;
-            } else {
-                footerEl.innerHTML = `✍️ Add New Name`;
+            // 2. Manual Entry (Always at Bottom)
+            const currentVal = inputElement.value;
+            if(currentVal.length > 0) {
+                html += `
+                    <div onclick="selectItem('${inputElement.id}', '${currentVal}')" class="manual-entry-item">
+                        <span>✍️</span> Use "${currentVal}" (नया लिखें / Add Manually)
+                    </div>
+                `;
+            } else if (list.length === 0) {
+                 html += `<div class="p-3 text-sm text-gray-400 italic">No items found. Type to add new.</div>`;
             }
+
+            boxElement.innerHTML = html;
         }
 
         window.selectItem = function(inputId, value) {
             document.getElementById(inputId).value = value;
-            // Hide parent box
-            if(inputId === 'address-input') document.getElementById('address-list-box').classList.add('hidden');
-            if(inputId === 'devotee-input') document.getElementById('devotee-list-box').classList.add('hidden');
         };
 
         function getFamilyProfiles() { try { return JSON.parse(localStorage.getItem('iskcon_family_list_v12') || '[]'); } catch { return []; } }
@@ -466,17 +459,15 @@
             let gender = genderArg || document.getElementById('gender').value;
             let age = ageArg || document.getElementById('age').value;
             
+            // Get values directly from search inputs if not passed
             let address = addressArg || document.getElementById('address-input').value.trim();
             let devotee = devoteeArg || document.getElementById('devotee-input').value.trim();
 
             if(!gender || !age || !address || !devotee) { alert("Complete all fields."); if(btn) { btn.disabled=false; btn.innerText=originalText; } return; }
 
-            // Auto-Correct Logic
-            const smartAddress = getSmartMatch(address, globalAddressList);
-            const smartDevotee = getSmartMatch(devotee, globalDevoteeList);
-            address = smartAddress || address;
-            devotee = smartDevotee || devotee;
-
+            // Auto-Correct only if in list (Optional - currently using direct selection)
+            // Logic: If user selected from dropdown, it's exact. If typed, it's new.
+            
             try {
                 const now = new Date();
                 const todayStr = getLocalDateString(now.toISOString()); 
@@ -557,8 +548,8 @@
                     document.getElementById('admin-address-list').value = globalAddressList.join('\n');
 
                     // Bind Dropdowns
-                    setupSearchableDropdown('devotee-input', 'devotee-list-box', 'devotee-scroll-area', 'devotee-manual-btn', globalDevoteeList);
-                    setupSearchableDropdown('address-input', 'address-list-box', 'address-scroll-area', 'address-manual-btn', globalAddressList);
+                    setupSearchableDropdown('devotee-input', 'devotee-list-box', globalDevoteeList);
+                    setupSearchableDropdown('address-input', 'address-list-box', globalAddressList);
 
                     isRegistrationOpen = data.isRegistrationOpen !== false;
                     const btn = document.getElementById('reg-toggle-btn');
