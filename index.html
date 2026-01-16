@@ -36,18 +36,32 @@
 
         /* Suggestion List Styling */
         .suggestion-item {
-            padding: 10px;
+            padding: 12px;
             cursor: pointer;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid #f3f4f6;
             font-size: 14px;
             color: #374151;
+            transition: background 0.2s;
         }
         .suggestion-item:hover {
             background-color: #ffedd5; /* Orange-100 */
-            font-weight: bold;
             color: #c2410c;
+            font-weight: 500;
         }
-        /* Auto Capitalize Inputs */
+        /* Style for the Manual Entry Option at Bottom */
+        .manual-entry-item {
+            padding: 12px;
+            cursor: pointer;
+            background-color: #fff7ed;
+            color: #c2410c; /* Dark Orange */
+            font-weight: bold;
+            border-top: 2px solid #fed7aa;
+            font-size: 14px;
+        }
+        .manual-entry-item:hover {
+            background-color: #fed7aa;
+        }
+
         input[type="text"] {
             text-transform: capitalize;
         }
@@ -124,13 +138,13 @@
                     
                     <div class="group relative">
                         <label class="block text-xs font-bold text-orange-800 uppercase mb-1">घर का पता (Address)</label>
-                        <input type="text" id="address-input" required placeholder="Search Address..." class="w-full p-3 bg-orange-50/50 border-b-2 border-orange-200 focus:border-orange-600 outline-none transition rounded-t-md text-gray-800">
+                        <input type="text" id="address-input" required placeholder="पता खोजें या लिखें..." class="w-full p-3 bg-orange-50/50 border-b-2 border-orange-200 focus:border-orange-600 outline-none transition rounded-t-md text-gray-800">
                         <div id="address-list-box" class="hidden absolute z-50 w-full bg-white border border-gray-200 rounded-b-lg shadow-xl max-h-48 overflow-y-auto top-full left-0"></div>
                     </div>
                     
                     <div class="group relative">
                         <label class="block text-xs font-bold text-orange-800 uppercase mb-1">मंदिर में किससे जुड़े हैं?</label>
-                        <input type="text" id="devotee-input" required placeholder="Search Reference..." class="w-full p-3 bg-orange-50/50 border-b-2 border-orange-200 focus:border-orange-600 outline-none transition rounded-t-md text-gray-800">
+                        <input type="text" id="devotee-input" required placeholder="भक्त का नाम खोजें या लिखें..." class="w-full p-3 bg-orange-50/50 border-b-2 border-orange-200 focus:border-orange-600 outline-none transition rounded-t-md text-gray-800">
                         <div id="devotee-list-box" class="hidden absolute z-50 w-full bg-white border border-gray-200 rounded-b-lg shadow-xl max-h-48 overflow-y-auto top-full left-0"></div>
                     </div>
 
@@ -255,44 +269,91 @@
         const errorMsg = document.getElementById('loading-error');
         let currentViewData = [];
 
-        // REUSABLE SEARCH LOGIC
+        // ✅ REUSABLE SEARCH LOGIC WITH MANUAL OPTION AT END
         function setupSearchableDropdown(inputId, listId, dataList) {
             const input = document.getElementById(inputId);
             const box = document.getElementById(listId);
 
+            // Show list on focus
             input.addEventListener('focus', () => {
-                renderList(dataList, inputId, listId);
+                renderList(dataList, input, box);
                 box.classList.remove('hidden');
             });
 
+            // Filter on type
             input.addEventListener('input', () => {
                 const val = input.value.toLowerCase();
                 const filtered = dataList.filter(item => item.toLowerCase().includes(val));
-                renderList(filtered, inputId, listId);
+                renderList(filtered, input, box);
                 box.classList.remove('hidden');
             });
 
+            // Hide on blur
             input.addEventListener('blur', () => {
                 setTimeout(() => box.classList.add('hidden'), 200);
             });
         }
 
-        function renderList(list, inputId, listId) {
-            const box = document.getElementById(listId);
-            if (list.length === 0) {
-                box.innerHTML = '<div class="p-2 text-gray-400 text-xs italic">Typing new entry...</div>';
-            } else {
-                box.innerHTML = list.map(item => `
-                    <div onclick="selectItem('${inputId}', '${item}')" class="suggestion-item">
+        function renderList(list, inputElement, boxElement) {
+            let html = '';
+            
+            // 1. Render Matches
+            if (list.length > 0) {
+                html += list.map(item => `
+                    <div onclick="selectItem('${inputElement.id}', '${item}')" class="suggestion-item">
                         ${item}
                     </div>
                 `).join('');
             }
+
+            // 2. ✅ ALWAYS ADD "WRITE MANUALLY" AT THE LAST
+            const currentVal = inputElement.value;
+            if(currentVal.length > 0) {
+                html += `
+                    <div onclick="selectItem('${inputElement.id}', '${currentVal}')" class="manual-entry-item">
+                        📝 Use "${currentVal}" (नया नाम लिखें / Write Manually)
+                    </div>
+                `;
+            }
+
+            boxElement.innerHTML = html;
         }
 
         window.selectItem = function(inputId, value) {
             document.getElementById(inputId).value = value;
         };
+
+        // LEVENSHTEIN (Fuzzy Match for Auto-Correct)
+        function levenshtein(a, b) {
+            const matrix = [];
+            for (let i = 0; i <= b.length; i++) matrix[i] = [i];
+            for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
+            for (let i = 1; i <= b.length; i++) {
+                for (let j = 1; j <= a.length; j++) {
+                    if (b.charAt(i - 1) == a.charAt(j - 1)) {
+                        matrix[i][j] = matrix[i - 1][j - 1];
+                    } else {
+                        matrix[i][j] = Math.min(matrix[i - 1][j - 1] + 1, Math.min(matrix[i][j - 1] + 1, matrix[i - 1][j] + 1));
+                    }
+                }
+            }
+            return matrix[b.length][a.length];
+        }
+
+        function getSmartMatch(inputName, list) {
+            if(!inputName) return "";
+            const cleanInput = inputName.trim();
+            const lowerInput = cleanInput.toLowerCase();
+            const exactMatch = list.find(d => d.toLowerCase() === lowerInput);
+            if(exactMatch) return exactMatch;
+            let bestMatch = null;
+            let minDistance = 3; 
+            list.forEach(existingName => {
+                const dist = levenshtein(lowerInput, existingName.toLowerCase());
+                if (dist < minDistance) { minDistance = dist; bestMatch = existingName; }
+            });
+            return bestMatch || cleanInput;
+        }
 
         function getFamilyProfiles() { try { return JSON.parse(localStorage.getItem('iskcon_family_list_v11') || '[]'); } catch { return []; } }
         function saveProfileToMemory(name, contact, homeAddress, devotee, gender, age) {
@@ -357,7 +418,7 @@
             return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
         }
 
-        async function generateTicket(name, contact, address, devotee, genderArg, ageArg) {
+        async function generateTicket(name, contact, addressArg, devoteeArg, genderArg, ageArg) {
             if(!userId) { alert("Reloading..."); window.location.reload(); return; }
             if(!/^\d{10}$/.test(contact)) { alert("Invalid Mobile Number"); return; }
             const btn = document.querySelector('button:not(.hidden)');
@@ -368,10 +429,18 @@
             let age = ageArg || document.getElementById('age').value;
             
             // Get values directly from search inputs if not passed
-            address = address || document.getElementById('address-input').value.trim();
-            devotee = devotee || document.getElementById('devotee-input').value.trim();
+            let address = addressArg || document.getElementById('address-input').value.trim();
+            let devotee = devoteeArg || document.getElementById('devotee-input').value.trim();
 
             if(!gender || !age || !address || !devotee) { alert("Complete all fields."); if(btn) { btn.disabled=false; btn.innerText=originalText; } return; }
+
+            // Auto-Correct only if in list
+            const smartAddress = getSmartMatch(address, globalAddressList);
+            const smartDevotee = getSmartMatch(devotee, globalDevoteeList);
+            
+            // If smart match found use it, else keep original input
+            address = smartAddress || address;
+            devotee = smartDevotee || devotee;
 
             try {
                 const now = new Date();
