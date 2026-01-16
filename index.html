@@ -34,7 +34,6 @@
             height: 20px;
         }
 
-        /* Suggestion List Styling */
         .suggestion-item {
             padding: 12px;
             cursor: pointer;
@@ -44,27 +43,22 @@
             transition: background 0.2s;
         }
         .suggestion-item:hover {
-            background-color: #ffedd5; /* Orange-100 */
+            background-color: #ffedd5;
             color: #c2410c;
             font-weight: 500;
         }
-        /* Style for the Manual Entry Option at Bottom */
         .manual-entry-item {
             padding: 12px;
             cursor: pointer;
             background-color: #fff7ed;
-            color: #c2410c; /* Dark Orange */
+            color: #c2410c;
             font-weight: bold;
             border-top: 2px solid #fed7aa;
             font-size: 14px;
         }
-        .manual-entry-item:hover {
-            background-color: #fed7aa;
-        }
+        .manual-entry-item:hover { background-color: #fed7aa; }
 
-        input[type="text"] {
-            text-transform: capitalize;
-        }
+        input[type="text"] { text-transform: capitalize; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-4">
@@ -269,26 +263,48 @@
         const errorMsg = document.getElementById('loading-error');
         let currentViewData = [];
 
-        // ✅ REUSABLE SEARCH LOGIC WITH MANUAL OPTION AT END
+        // ✅ HINDI TRANSILITERATION MAPPING
+        const translitMap = {
+            'क': 'k', 'ख': 'kh', 'ग': 'g', 'घ': 'gh', 'ङ': 'ng',
+            'च': 'ch', 'छ': 'chh', 'ज': 'j', 'झ': 'jh', 'ञ': 'ny',
+            'ट': 't', 'ठ': 'th', 'ड': 'd', 'ढ': 'dh', 'ण': 'n',
+            'त': 't', 'थ': 'th', 'द': 'd', 'ध': 'dh', 'न': 'n',
+            'प': 'p', 'फ': 'ph', 'ब': 'b', 'भ': 'bh', 'म': 'm',
+            'य': 'y', 'र': 'r', 'ल': 'l', 'व': 'v', 'श': 'sh',
+            'ष': 'sh', 'स': 's', 'ह': 'h', 'क्ष': 'ksh', 'त्र': 'tr', 'ज्ञ': 'gy',
+            'अ': 'a', 'आ': 'a', 'इ': 'i', 'ई': 'ee', 'उ': 'u', 'ऊ': 'oo',
+            'ए': 'e', 'ऐ': 'ai', 'ओ': 'o', 'औ': 'au', 'अं': 'an', 'अः': 'ah',
+            'ा': 'a', 'ि': 'i', 'ी': 'ee', 'ु': 'u', 'ू': 'oo', 'ृ': 'ri',
+            'े': 'e', 'ै': 'ai', 'ो': 'o', 'ौ': 'au', 'ं': 'n', 'ः': 'h', '्': ''
+        };
+
+        function hindiToEnglish(str) {
+            return str.split('').map(char => translitMap[char] || char).join('').toLowerCase();
+        }
+
+        // ✅ ADVANCED SEARCH LOGIC (HINDI + ENGLISH)
         function setupSearchableDropdown(inputId, listId, dataList) {
             const input = document.getElementById(inputId);
             const box = document.getElementById(listId);
 
-            // Show list on focus
             input.addEventListener('focus', () => {
                 renderList(dataList, input, box);
                 box.classList.remove('hidden');
             });
 
-            // Filter on type
             input.addEventListener('input', () => {
-                const val = input.value.toLowerCase();
-                const filtered = dataList.filter(item => item.toLowerCase().includes(val));
+                const rawVal = input.value.toLowerCase();
+                const engVal = hindiToEnglish(rawVal); // Convert Hindi Input to English Key
+
+                const filtered = dataList.filter(item => {
+                    const itemLower = item.toLowerCase();
+                    // Match either direct English OR transliterated Hindi
+                    return itemLower.includes(rawVal) || itemLower.includes(engVal);
+                });
                 renderList(filtered, input, box);
                 box.classList.remove('hidden');
             });
 
-            // Hide on blur
             input.addEventListener('blur', () => {
                 setTimeout(() => box.classList.add('hidden'), 200);
             });
@@ -297,7 +313,6 @@
         function renderList(list, inputElement, boxElement) {
             let html = '';
             
-            // 1. Render Matches
             if (list.length > 0) {
                 html += list.map(item => `
                     <div onclick="selectItem('${inputElement.id}', '${item}')" class="suggestion-item">
@@ -306,12 +321,12 @@
                 `).join('');
             }
 
-            // 2. ✅ ALWAYS ADD "WRITE MANUALLY" AT THE LAST
+            // Manual Entry Option at BOTTOM
             const currentVal = inputElement.value;
             if(currentVal.length > 0) {
                 html += `
                     <div onclick="selectItem('${inputElement.id}', '${currentVal}')" class="manual-entry-item">
-                        📝 Use "${currentVal}" (नया नाम लिखें / Write Manually)
+                        📝 Use "${currentVal}" (Write Manually / नया लिखें)
                     </div>
                 `;
             }
@@ -323,47 +338,15 @@
             document.getElementById(inputId).value = value;
         };
 
-        // LEVENSHTEIN (Fuzzy Match for Auto-Correct)
-        function levenshtein(a, b) {
-            const matrix = [];
-            for (let i = 0; i <= b.length; i++) matrix[i] = [i];
-            for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
-            for (let i = 1; i <= b.length; i++) {
-                for (let j = 1; j <= a.length; j++) {
-                    if (b.charAt(i - 1) == a.charAt(j - 1)) {
-                        matrix[i][j] = matrix[i - 1][j - 1];
-                    } else {
-                        matrix[i][j] = Math.min(matrix[i - 1][j - 1] + 1, Math.min(matrix[i][j - 1] + 1, matrix[i - 1][j] + 1));
-                    }
-                }
-            }
-            return matrix[b.length][a.length];
-        }
-
-        function getSmartMatch(inputName, list) {
-            if(!inputName) return "";
-            const cleanInput = inputName.trim();
-            const lowerInput = cleanInput.toLowerCase();
-            const exactMatch = list.find(d => d.toLowerCase() === lowerInput);
-            if(exactMatch) return exactMatch;
-            let bestMatch = null;
-            let minDistance = 3; 
-            list.forEach(existingName => {
-                const dist = levenshtein(lowerInput, existingName.toLowerCase());
-                if (dist < minDistance) { minDistance = dist; bestMatch = existingName; }
-            });
-            return bestMatch || cleanInput;
-        }
-
-        function getFamilyProfiles() { try { return JSON.parse(localStorage.getItem('iskcon_family_list_v11') || '[]'); } catch { return []; } }
+        function getFamilyProfiles() { try { return JSON.parse(localStorage.getItem('iskcon_family_list_v12') || '[]'); } catch { return []; } }
         function saveProfileToMemory(name, contact, homeAddress, devotee, gender, age) {
             let profiles = getFamilyProfiles();
             profiles = profiles.filter(p => p.name.toLowerCase() !== name.trim().toLowerCase());
             profiles.unshift({ name: name.trim(), contact: contact.trim(), homeAddress: homeAddress.trim(), devotee: devotee.trim(), gender: gender, age: age });
             if(profiles.length > 8) profiles.pop();
-            localStorage.setItem('iskcon_family_list_v11', JSON.stringify(profiles));
+            localStorage.setItem('iskcon_family_list_v12', JSON.stringify(profiles));
         }
-        window.clearFamilyData = function() { if(confirm("Clear saved list?")) { localStorage.removeItem('iskcon_family_list_v11'); renderFamilyScreen(); } };
+        window.clearFamilyData = function() { if(confirm("Clear saved list?")) { localStorage.removeItem('iskcon_family_list_v12'); renderFamilyScreen(); } };
         function hideAll() { Object.values(views).forEach(el => el.classList.add('hidden')); }
 
         window.renderFamilyScreen = function() {
@@ -428,19 +411,10 @@
             let gender = genderArg || document.getElementById('gender').value;
             let age = ageArg || document.getElementById('age').value;
             
-            // Get values directly from search inputs if not passed
             let address = addressArg || document.getElementById('address-input').value.trim();
             let devotee = devoteeArg || document.getElementById('devotee-input').value.trim();
 
             if(!gender || !age || !address || !devotee) { alert("Complete all fields."); if(btn) { btn.disabled=false; btn.innerText=originalText; } return; }
-
-            // Auto-Correct only if in list
-            const smartAddress = getSmartMatch(address, globalAddressList);
-            const smartDevotee = getSmartMatch(devotee, globalDevoteeList);
-            
-            // If smart match found use it, else keep original input
-            address = smartAddress || address;
-            devotee = smartDevotee || devotee;
 
             try {
                 const now = new Date();
@@ -521,7 +495,6 @@
                     globalAddressList = data.addressList || [];
                     document.getElementById('admin-address-list').value = globalAddressList.join('\n');
 
-                    // Bind Smart Search (Re-bind to ensure updates)
                     setupSearchableDropdown('devotee-input', 'devotee-list-box', globalDevoteeList);
                     setupSearchableDropdown('address-input', 'address-list-box', globalAddressList);
 
