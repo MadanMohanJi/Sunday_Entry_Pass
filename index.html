@@ -41,7 +41,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: #f9fafb;
+            background: #fff;
             z-index: 100;
             display: flex;
             flex-direction: column;
@@ -53,20 +53,20 @@
         }
 
         .modal-header {
-            background: white;
+            background: #fff7ed; /* Light Orange */
             padding: 15px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
             display: flex;
             align-items: center;
             gap: 10px;
-            border-bottom: 1px solid #e5e7eb;
+            border-bottom: 1px solid #fed7aa;
         }
 
         /* List Items */
         .modal-item {
             padding: 16px;
             border-bottom: 1px solid #f3f4f6;
-            font-size: 15px;
+            font-size: 16px;
             color: #374151;
             background: white;
             display: flex;
@@ -79,7 +79,7 @@
 
         /* Manual Add Button (Highlight) */
         .manual-add-row {
-            background-color: #fff7ed;
+            background-color: #fffbeb;
             color: #ea580c;
             font-weight: bold;
             border-bottom: 2px solid #fed7aa;
@@ -177,6 +177,22 @@
                 </form>
             </div>
 
+            <div id="selection-modal" class="full-screen-modal">
+                <div class="modal-header">
+                    <button onclick="closeSelectionModal()" class="p-2 -ml-2 text-gray-500 hover:bg-gray-100 rounded-full">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+                    </button>
+                    <div class="flex-1 relative">
+                        <input type="text" id="modal-search-input" placeholder="नाम लिखें या खोजें (Type here)..." class="w-full bg-white border border-orange-200 text-gray-800 rounded-full px-4 py-2 pl-10 outline-none text-base shadow-sm focus:border-orange-500 focus:ring-1 focus:ring-orange-500">
+                        <div class="absolute left-3 top-2.5 text-gray-400">
+                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        </div>
+                    </div>
+                </div>
+                <div id="modal-list-container" class="flex-1 overflow-y-auto bg-gray-50">
+                    </div>
+            </div>
+
             <div id="card-section" class="hidden">
                 <div class="text-center mb-4">
                     <div class="bg-green-100 text-green-800 px-4 py-1 rounded-full text-sm font-bold inline-flex items-center mb-2">✓ Pass Generated!</div>
@@ -210,22 +226,6 @@
                     <button id="download-btn" onclick="downloadCard()" class="w-full bg-green-600 text-white py-3 rounded-lg font-bold shadow hover:bg-green-700 flex items-center justify-center gap-2">Download</button>
                     <button onclick="renderFamilyScreen()" class="w-full text-orange-700 bg-orange-50 border border-orange-200 py-3 rounded-lg text-sm font-bold hover:bg-orange-100">+ Add Person</button>
                 </div>
-            </div>
-
-            <div id="selection-modal" class="full-screen-modal">
-                <div class="modal-header">
-                    <button onclick="closeSelectionModal()" class="p-2 -ml-2 text-gray-500 hover:bg-gray-100 rounded-full">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-                    </button>
-                    <div class="flex-1 relative">
-                        <input type="text" id="modal-search-input" placeholder="यहाँ लिखें (Search or Type here)..." class="w-full bg-gray-100 text-gray-800 rounded-full px-4 py-2 pl-10 outline-none text-sm font-medium">
-                        <div class="absolute left-3 top-2.5 text-gray-400">
-                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                        </div>
-                    </div>
-                </div>
-                <div id="modal-list-container" class="flex-1 overflow-y-auto">
-                    </div>
             </div>
 
             <div id="admin-dashboard-section" class="hidden">
@@ -336,21 +336,18 @@
             return eng.toLowerCase().replace(/[aeiou]/g, '');
         }
 
-        // ✅ FULL SCREEN MODAL LOGIC
+        // ✅ FIXED MODAL LOGIC
         window.openSelectionModal = function(type) {
             activeSelectionType = type;
             const list = type === 'devotee' ? globalDevoteeList : globalAddressList;
             const title = type === 'devotee' ? 'Reference Name' : 'Address';
             
-            // Clear and Focus
             const input = document.getElementById('modal-search-input');
             input.value = "";
-            input.placeholder = `Search or Type ${title}...`;
+            input.placeholder = `Search or Write New Name...`;
             
             renderModalList(list, "");
             modal.classList.add('active');
-            
-            // Delay focus slightly for animation
             setTimeout(() => input.focus(), 100);
         };
 
@@ -374,14 +371,14 @@
             const container = document.getElementById('modal-list-container');
             let html = '';
 
-            // ✅ MANUAL ADD OPTION ON TOP
+            // ✅ MANUAL ADD ON TOP WITH HINDI TEXT
             if (searchText.trim().length > 0) {
                 html += `
-                    <div onclick="selectFromModal('${searchText}')" class="manual-add-row modal-item">
+                    <div onclick="selectManualEntry('${searchText}')" class="manual-add-row modal-item">
                         <span class="text-xl">➕</span> 
                         <div>
                             <p class="font-bold">Use "${searchText}"</p>
-                            <p class="text-xs font-normal opacity-80">Write Manually (नया लिखें)</p>
+                            <p class="text-xs font-normal opacity-80">हाथ से लिखें (Manual Entry)</p>
                         </div>
                     </div>
                 `;
@@ -389,25 +386,35 @@
 
             if (list.length > 0) {
                 html += list.map(item => `
-                    <div onclick="selectFromModal('${item}')" class="modal-item">
-                        <span class="text-gray-400">👤</span> ${item}
+                    <div onclick="selectFromList('${item}')" class="modal-item">
+                        <span class="text-gray-400 text-lg">👤</span> ${item}
                     </div>
                 `).join('');
             } else if (searchText.trim().length === 0) {
-                 // Show hint if list matches but text is empty (usually rare with filter)
+                 // Empty
             } else {
-                html += `<div class="p-6 text-center text-gray-400 italic">No matches. Tap the top option to add "${searchText}".</div>`;
+                html += `<div class="p-6 text-center text-gray-400 italic">No matches. Click top option to add "${searchText}".</div>`;
             }
             container.innerHTML = html;
         }
 
-        window.selectFromModal = function(value) {
-            if (activeSelectionType === 'devotee') {
-                document.getElementById('devotee-input').value = value;
-            } else {
-                document.getElementById('address-input').value = value;
-            }
+        // ✅ SELECT FROM LIST (READONLY)
+        window.selectFromList = function(value) {
+            const inputId = activeSelectionType === 'devotee' ? 'devotee-input' : 'address-input';
+            const input = document.getElementById(inputId);
+            input.value = value;
+            input.setAttribute('readonly', true); // Keep readonly for existing items
             closeSelectionModal();
+        };
+
+        // ✅ MANUAL ENTRY (EDITABLE)
+        window.selectManualEntry = function(value) {
+            const inputId = activeSelectionType === 'devotee' ? 'devotee-input' : 'address-input';
+            const input = document.getElementById(inputId);
+            input.value = value;
+            input.removeAttribute('readonly'); // ✅ ENABLE TYPING
+            closeSelectionModal();
+            input.focus(); // Focus so user can continue typing
         };
 
         function getFamilyProfiles() { try { return JSON.parse(localStorage.getItem('iskcon_family_list_v13') || '[]'); } catch { return []; } }
@@ -449,12 +456,19 @@
             document.getElementById('contact').value = "";
             document.getElementById('gender').value = ""; 
             document.getElementById('age').value = "";
-            document.getElementById('address-input').value = "";
-            document.getElementById('devotee-input').value = "";
+            
+            // Reset fields
+            const addr = document.getElementById('address-input');
+            addr.value = "";
+            addr.setAttribute('readonly', true); // Reset to readonly
+            
+            const dev = document.getElementById('devotee-input');
+            dev.value = "";
+            dev.setAttribute('readonly', true); // Reset to readonly
 
             if(profiles.length > 0) {
-                document.getElementById('address-input').value = profiles[0].homeAddress;
-                document.getElementById('devotee-input').value = profiles[0].devotee;
+                addr.value = profiles[0].homeAddress;
+                dev.value = profiles[0].devotee;
             } 
             views.form.classList.remove('hidden');
         };
