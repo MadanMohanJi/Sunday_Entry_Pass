@@ -263,26 +263,33 @@
         const errorMsg = document.getElementById('loading-error');
         let currentViewData = [];
 
-        // ✅ HINDI TRANSILITERATION MAPPING
+        // ✅ HINDI-TO-ENGLISH PHONETIC MAP (Simplified for Matching)
         const translitMap = {
-            'क': 'k', 'ख': 'kh', 'ग': 'g', 'घ': 'gh', 'ङ': 'ng',
-            'च': 'ch', 'छ': 'chh', 'ज': 'j', 'झ': 'jh', 'ञ': 'ny',
+            'क': 'k', 'ख': 'kh', 'ग': 'g', 'घ': 'gh', 'ङ': 'n',
+            'च': 'ch', 'छ': 'chh', 'ज': 'j', 'झ': 'jh', 'ञ': 'n',
             'ट': 't', 'ठ': 'th', 'ड': 'd', 'ढ': 'dh', 'ण': 'n',
             'त': 't', 'थ': 'th', 'द': 'd', 'ध': 'dh', 'न': 'n',
             'प': 'p', 'फ': 'ph', 'ब': 'b', 'भ': 'bh', 'म': 'm',
-            'य': 'y', 'र': 'r', 'ल': 'l', 'व': 'v', 'श': 'sh',
-            'ष': 'sh', 'स': 's', 'ह': 'h', 'क्ष': 'ksh', 'त्र': 'tr', 'ज्ञ': 'gy',
-            'अ': 'a', 'आ': 'a', 'इ': 'i', 'ई': 'ee', 'उ': 'u', 'ऊ': 'oo',
-            'ए': 'e', 'ऐ': 'ai', 'ओ': 'o', 'औ': 'au', 'अं': 'an', 'अः': 'ah',
-            'ा': 'a', 'ि': 'i', 'ी': 'ee', 'ु': 'u', 'ू': 'oo', 'ृ': 'ri',
-            'े': 'e', 'ै': 'ai', 'ो': 'o', 'ौ': 'au', 'ं': 'n', 'ः': 'h', '्': ''
+            'य': 'y', 'र': 'r', 'ल': 'l', 'व': 'v', 'श': 'sh', 'ष': 'sh', 'स': 's', 'ह': 'h',
+            'क्ष': 'ksh', 'त्र': 'tr', 'ज्ञ': 'gy', 'श्र': 'shr',
+            'अ': 'a', 'आ': 'a', 'इ': 'i', 'ई': 'i', 'उ': 'u', 'ऊ': 'u', 'ए': 'e', 'ऐ': 'ai', 'ओ': 'o', 'औ': 'au',
+            'ा': 'a', 'ि': 'i', 'ी': 'i', 'ु': 'u', 'ू': 'u', 'े': 'e', 'ै': 'ai', 'ो': 'o', 'ौ': 'au',
+            'ं': 'n', 'ः': 'h', '्': ''
         };
 
-        function hindiToEnglish(str) {
-            return str.split('').map(char => translitMap[char] || char).join('').toLowerCase();
+        // Helper: Convert Hindi string to Phonetic English (Skeleton)
+        function getPhoneticSkeleton(str) {
+            if (!str) return "";
+            let eng = "";
+            for (let i = 0; i < str.length; i++) {
+                let char = str[i];
+                eng += translitMap[char] || char; // Map Hindi or keep English
+            }
+            // Remove vowels from English to create "Skeleton" (e.g. Krishna -> krshn)
+            return eng.toLowerCase().replace(/[aeiou]/g, '');
         }
 
-        // ✅ ADVANCED SEARCH LOGIC (HINDI + ENGLISH)
+        // ✅ AI SEARCH LOGIC (Phonetic + Substring)
         function setupSearchableDropdown(inputId, listId, dataList) {
             const input = document.getElementById(inputId);
             const box = document.getElementById(listId);
@@ -293,13 +300,23 @@
             });
 
             input.addEventListener('input', () => {
-                const rawVal = input.value.toLowerCase();
-                const engVal = hindiToEnglish(rawVal); // Convert Hindi Input to English Key
+                const rawVal = input.value.toLowerCase().trim();
+                if(rawVal === "") { renderList(dataList, input, box); return; }
+
+                const inputSkeleton = getPhoneticSkeleton(rawVal); // Get Skeleton of Input
 
                 const filtered = dataList.filter(item => {
                     const itemLower = item.toLowerCase();
-                    // Match either direct English OR transliterated Hindi
-                    return itemLower.includes(rawVal) || itemLower.includes(engVal);
+                    const itemSkeleton = getPhoneticSkeleton(item); // Get Skeleton of List Item
+                    
+                    // Match 1: Direct Substring (English-English)
+                    if (itemLower.includes(rawVal)) return true;
+                    
+                    // Match 2: Phonetic Skeleton Match (Hindi-English / English-Hindi)
+                    // Allows "Krishn" to match "Krishna"
+                    if (itemSkeleton.includes(inputSkeleton)) return true;
+
+                    return false;
                 });
                 renderList(filtered, input, box);
                 box.classList.remove('hidden');
@@ -411,6 +428,7 @@
             let gender = genderArg || document.getElementById('gender').value;
             let age = ageArg || document.getElementById('age').value;
             
+            // Get values directly from search inputs if not passed
             let address = addressArg || document.getElementById('address-input').value.trim();
             let devotee = devoteeArg || document.getElementById('devotee-input').value.trim();
 
@@ -495,6 +513,7 @@
                     globalAddressList = data.addressList || [];
                     document.getElementById('admin-address-list').value = globalAddressList.join('\n');
 
+                    // Bind Smart Search (Re-bind to ensure updates)
                     setupSearchableDropdown('devotee-input', 'devotee-list-box', globalDevoteeList);
                     setupSearchableDropdown('address-input', 'address-list-box', globalAddressList);
 
