@@ -34,54 +34,55 @@
             height: 20px;
         }
 
-        /* GOOGLE STYLE DROPDOWN */
-        .google-dropdown {
-            position: absolute;
-            top: 100%;
+        /* ✅ FULL SCREEN MODAL (WhatsApp Style) */
+        .full-screen-modal {
+            position: fixed;
+            top: 0;
             left: 0;
             width: 100%;
-            background: white;
-            border: 1px solid #fed7aa;
-            border-top: none;
-            border-radius: 0 0 12px 12px;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-            z-index: 50;
-            max-height: 250px;
-            overflow-y: auto;
-            display: none;
-        }
-        
-        .suggestion-item {
-            padding: 12px 16px;
-            cursor: pointer;
-            border-bottom: 1px solid #f3f4f6;
-            font-size: 14px;
-            color: #374151;
+            height: 100%;
+            background: #f9fafb;
+            z-index: 100;
             display: flex;
-            align-items: center;
-            gap: 10px;
+            flex-direction: column;
+            transform: translateY(100%);
+            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .suggestion-item:hover {
-            background-color: #ffedd5;
-            color: #c2410c;
+        .full-screen-modal.active {
+            transform: translateY(0);
         }
 
-        /* Manual Entry Item */
-        .manual-entry-item {
-            padding: 14px 16px;
-            cursor: pointer;
-            background-color: #fffbeb; 
-            color: #d97706;
-            font-weight: bold;
-            font-size: 14px;
-            border-top: 2px solid #fed7aa;
+        .modal-header {
+            background: white;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
             display: flex;
             align-items: center;
             gap: 10px;
+            border-bottom: 1px solid #e5e7eb;
         }
-        .manual-entry-item:hover {
-            background-color: #fed7aa;
-            color: #7c2d12;
+
+        /* List Items */
+        .modal-item {
+            padding: 16px;
+            border-bottom: 1px solid #f3f4f6;
+            font-size: 15px;
+            color: #374151;
+            background: white;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .modal-item:active {
+            background-color: #ffedd5;
+        }
+
+        /* Manual Add Button (Highlight) */
+        .manual-add-row {
+            background-color: #fff7ed;
+            color: #ea580c;
+            font-weight: bold;
+            border-bottom: 2px solid #fed7aa;
         }
 
         input[type="text"] { text-transform: capitalize; }
@@ -156,26 +157,20 @@
 
                     <div class="group"><label class="block text-xs font-bold text-orange-800 uppercase mb-1">मोबाइल नंबर (Mobile)</label><input type="tel" id="contact" required maxlength="10" placeholder="10 अंकों का नंबर" class="w-full p-3 bg-orange-50/50 border-b-2 border-orange-200 focus:border-orange-600 outline-none transition rounded-t-md placeholder-gray-400 text-gray-800"></div>
                     
-                    <div class="group relative">
+                    <div class="group">
                         <label class="block text-xs font-bold text-orange-800 uppercase mb-1">घर का पता (Address)</label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                            </div>
-                            <input type="text" id="address-input" required placeholder="पता खोजें या लिखें..." class="w-full pl-10 p-3 bg-orange-50/50 border-b-2 border-orange-200 focus:border-orange-600 outline-none transition rounded-t-md text-gray-800 placeholder-gray-500">
+                        <div onclick="openSelectionModal('address')" class="relative w-full cursor-pointer">
+                            <input type="text" id="address-input" readonly placeholder="यहाँ क्लिक करें (Click to Search)..." class="w-full p-3 bg-orange-50/50 border-b-2 border-orange-200 focus:border-orange-600 outline-none transition rounded-t-md text-gray-800 cursor-pointer">
+                            <span class="absolute right-3 top-3 text-orange-400">▼</span>
                         </div>
-                        <div id="address-list-box" class="google-dropdown"></div>
                     </div>
                     
-                    <div class="group relative">
+                    <div class="group">
                         <label class="block text-xs font-bold text-orange-800 uppercase mb-1">मंदिर में किससे जुड़े हैं?</label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                            </div>
-                            <input type="text" id="devotee-input" required placeholder="भक्त का नाम खोजें या लिखें..." class="w-full pl-10 p-3 bg-orange-50/50 border-b-2 border-orange-200 focus:border-orange-600 outline-none transition rounded-t-md text-gray-800 placeholder-gray-500">
+                        <div onclick="openSelectionModal('devotee')" class="relative w-full cursor-pointer">
+                            <input type="text" id="devotee-input" readonly placeholder="यहाँ क्लिक करें (Click to Search)..." class="w-full p-3 bg-orange-50/50 border-b-2 border-orange-200 focus:border-orange-600 outline-none transition rounded-t-md text-gray-800 cursor-pointer">
+                            <span class="absolute right-3 top-3 text-orange-400">▼</span>
                         </div>
-                        <div id="devotee-list-box" class="google-dropdown"></div>
                     </div>
 
                     <button type="submit" id="submit-button" class="w-full mt-4 bg-orange-700 text-white py-3.5 rounded-lg font-bold shadow-md hover:bg-orange-800 transition-transform active:scale-95 flex items-center justify-center">हरे कृष्ण (Get Pass)</button>
@@ -215,6 +210,22 @@
                     <button id="download-btn" onclick="downloadCard()" class="w-full bg-green-600 text-white py-3 rounded-lg font-bold shadow hover:bg-green-700 flex items-center justify-center gap-2">Download</button>
                     <button onclick="renderFamilyScreen()" class="w-full text-orange-700 bg-orange-50 border border-orange-200 py-3 rounded-lg text-sm font-bold hover:bg-orange-100">+ Add Person</button>
                 </div>
+            </div>
+
+            <div id="selection-modal" class="full-screen-modal">
+                <div class="modal-header">
+                    <button onclick="closeSelectionModal()" class="p-2 -ml-2 text-gray-500 hover:bg-gray-100 rounded-full">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+                    </button>
+                    <div class="flex-1 relative">
+                        <input type="text" id="modal-search-input" placeholder="यहाँ लिखें (Search or Type here)..." class="w-full bg-gray-100 text-gray-800 rounded-full px-4 py-2 pl-10 outline-none text-sm font-medium">
+                        <div class="absolute left-3 top-2.5 text-gray-400">
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        </div>
+                    </div>
+                </div>
+                <div id="modal-list-container" class="flex-1 overflow-y-auto">
+                    </div>
             </div>
 
             <div id="admin-dashboard-section" class="hidden">
@@ -294,8 +305,10 @@
         let globalDevoteeList = []; 
         let globalAddressList = [];
         let siteHeadingText = "ISKCON UJJAIN TEMPLE PASS";
+        let activeSelectionType = "";
 
         const views = { loading: document.getElementById('loading-state'), closed: document.getElementById('closed-section'), family: document.getElementById('family-section'), form: document.getElementById('form-section'), card: document.getElementById('card-section'), admin: document.getElementById('admin-dashboard-section'), login: document.getElementById('admin-login-section') };
+        const modal = document.getElementById('selection-modal');
         const errorMsg = document.getElementById('loading-error');
         let currentViewData = [];
 
@@ -323,88 +336,89 @@
             return eng.toLowerCase().replace(/[aeiou]/g, '');
         }
 
-        // ✅ FIXED: ALLOW MANUAL WRITING & GOOGLE STYLE
-        function setupSearchableDropdown(inputId, listId, dataList) {
-            const input = document.getElementById(inputId);
-            const box = document.getElementById(listId);
-
-            // Show list on focus
-            input.addEventListener('focus', () => {
-                renderList(dataList, input, box);
-                box.style.display = 'block';
-            });
-
-            // Filter on type
-            input.addEventListener('input', () => {
-                const rawVal = input.value.toLowerCase().trim();
-                const skeleton = getPhoneticSkeleton(rawVal);
-                
-                const filtered = dataList.filter(item => {
-                    if(!rawVal) return true;
-                    return item.toLowerCase().includes(rawVal) || getPhoneticSkeleton(item).includes(skeleton);
-                });
-                
-                renderList(filtered, input, box);
-                box.style.display = 'block';
-            });
-
-            // Hide on blur
-            input.addEventListener('blur', (e) => {
-                setTimeout(() => box.style.display = 'none', 200);
-            });
-        }
-
-        function renderList(list, inputElement, boxElement) {
-            let html = '';
+        // ✅ FULL SCREEN MODAL LOGIC
+        window.openSelectionModal = function(type) {
+            activeSelectionType = type;
+            const list = type === 'devotee' ? globalDevoteeList : globalAddressList;
+            const title = type === 'devotee' ? 'Reference Name' : 'Address';
             
-            // 1. Matches
-            if (list.length > 0) {
-                html += list.map(item => `
-                    <div onclick="selectItem('${inputElement.id}', '${item}')" class="suggestion-item">
-                        <span>👤</span> ${item}
-                    </div>
-                `).join('');
-            }
+            // Clear and Focus
+            const input = document.getElementById('modal-search-input');
+            input.value = "";
+            input.placeholder = `Search or Type ${title}...`;
+            
+            renderModalList(list, "");
+            modal.classList.add('active');
+            
+            // Delay focus slightly for animation
+            setTimeout(() => input.focus(), 100);
+        };
 
-            // 2. Manual Entry (Always at Bottom)
-            const currentVal = inputElement.value;
-            if(currentVal.length > 0) {
+        window.closeSelectionModal = function() {
+            modal.classList.remove('active');
+        };
+
+        document.getElementById('modal-search-input').addEventListener('input', function() {
+            const rawVal = this.value.toLowerCase().trim();
+            const list = activeSelectionType === 'devotee' ? globalDevoteeList : globalAddressList;
+            
+            const skeleton = getPhoneticSkeleton(rawVal);
+            const filtered = list.filter(item => {
+                if(!rawVal) return true;
+                return item.toLowerCase().includes(rawVal) || getPhoneticSkeleton(item).includes(skeleton);
+            });
+            renderModalList(filtered, this.value);
+        });
+
+        function renderModalList(list, searchText) {
+            const container = document.getElementById('modal-list-container');
+            let html = '';
+
+            // ✅ MANUAL ADD OPTION ON TOP
+            if (searchText.trim().length > 0) {
                 html += `
-                    <div onclick="selectManual('${inputElement.id}')" class="manual-entry-item">
-                        <span>✍️</span> Use "${currentVal}" (Write Manually / नया लिखें)
+                    <div onclick="selectFromModal('${searchText}')" class="manual-add-row modal-item">
+                        <span class="text-xl">➕</span> 
+                        <div>
+                            <p class="font-bold">Use "${searchText}"</p>
+                            <p class="text-xs font-normal opacity-80">Write Manually (नया लिखें)</p>
+                        </div>
                     </div>
                 `;
-            } else if (list.length === 0) {
-                 html += `<div class="p-3 text-sm text-gray-400 italic">No items found. Type to add new.</div>`;
             }
 
-            boxElement.innerHTML = html;
+            if (list.length > 0) {
+                html += list.map(item => `
+                    <div onclick="selectFromModal('${item}')" class="modal-item">
+                        <span class="text-gray-400">👤</span> ${item}
+                    </div>
+                `).join('');
+            } else if (searchText.trim().length === 0) {
+                 // Show hint if list matches but text is empty (usually rare with filter)
+            } else {
+                html += `<div class="p-6 text-center text-gray-400 italic">No matches. Tap the top option to add "${searchText}".</div>`;
+            }
+            container.innerHTML = html;
         }
 
-        // Select from List
-        window.selectItem = function(inputId, value) {
-            document.getElementById(inputId).value = value;
-            if(inputId === 'address-input') document.getElementById('address-list-box').style.display = 'none';
-            if(inputId === 'devotee-input') document.getElementById('devotee-list-box').style.display = 'none';
+        window.selectFromModal = function(value) {
+            if (activeSelectionType === 'devotee') {
+                document.getElementById('devotee-input').value = value;
+            } else {
+                document.getElementById('address-input').value = value;
+            }
+            closeSelectionModal();
         };
 
-        // Select Manual (Just closes box, value remains what user typed)
-        window.selectManual = function(inputId) {
-            const input = document.getElementById(inputId);
-            input.focus(); // Keep focus
-            if(inputId === 'address-input') document.getElementById('address-list-box').style.display = 'none';
-            if(inputId === 'devotee-input') document.getElementById('devotee-list-box').style.display = 'none';
-        };
-
-        function getFamilyProfiles() { try { return JSON.parse(localStorage.getItem('iskcon_family_list_v12') || '[]'); } catch { return []; } }
+        function getFamilyProfiles() { try { return JSON.parse(localStorage.getItem('iskcon_family_list_v13') || '[]'); } catch { return []; } }
         function saveProfileToMemory(name, contact, homeAddress, devotee, gender, age) {
             let profiles = getFamilyProfiles();
             profiles = profiles.filter(p => p.name.toLowerCase() !== name.trim().toLowerCase());
             profiles.unshift({ name: name.trim(), contact: contact.trim(), homeAddress: homeAddress.trim(), devotee: devotee.trim(), gender: gender, age: age });
             if(profiles.length > 8) profiles.pop();
-            localStorage.setItem('iskcon_family_list_v12', JSON.stringify(profiles));
+            localStorage.setItem('iskcon_family_list_v13', JSON.stringify(profiles));
         }
-        window.clearFamilyData = function() { if(confirm("Clear saved list?")) { localStorage.removeItem('iskcon_family_list_v12'); renderFamilyScreen(); } };
+        window.clearFamilyData = function() { if(confirm("Clear saved list?")) { localStorage.removeItem('iskcon_family_list_v13'); renderFamilyScreen(); } };
         function hideAll() { Object.values(views).forEach(el => el.classList.add('hidden')); }
 
         window.renderFamilyScreen = function() {
@@ -468,15 +482,11 @@
             
             let gender = genderArg || document.getElementById('gender').value;
             let age = ageArg || document.getElementById('age').value;
-            
-            // Get values directly from search inputs if not passed
-            let address = addressArg || document.getElementById('address-input').value.trim();
-            let devotee = devoteeArg || document.getElementById('devotee-input').value.trim();
+            let address = addressArg || document.getElementById('address-input').value;
+            let devotee = devoteeArg || document.getElementById('devotee-input').value;
 
             if(!gender || !age || !address || !devotee) { alert("Complete all fields."); if(btn) { btn.disabled=false; btn.innerText=originalText; } return; }
 
-            // Auto-Correct only if in list (Optional - currently using direct selection)
-            
             try {
                 const now = new Date();
                 const todayStr = getLocalDateString(now.toISOString()); 
@@ -556,10 +566,6 @@
                     globalAddressList = data.addressList || [];
                     document.getElementById('admin-address-list').value = globalAddressList.join('\n');
 
-                    // Bind Dropdowns
-                    setupSearchableDropdown('devotee-input', 'devotee-list-box', globalDevoteeList);
-                    setupSearchableDropdown('address-input', 'address-list-box', globalAddressList);
-
                     isRegistrationOpen = data.isRegistrationOpen !== false;
                     const btn = document.getElementById('reg-toggle-btn');
                     if(btn) { btn.innerText = isRegistrationOpen ? "OPEN" : "CLOSED"; btn.className = isRegistrationOpen ? "px-4 py-1.5 rounded-full text-xs font-extrabold bg-green-600 text-white" : "px-4 py-1.5 rounded-full text-xs font-extrabold bg-red-600 text-white"; }
@@ -583,7 +589,6 @@
             });
         }
 
-        // SAVE FUNCTIONS
         window.saveDevoteeList = async function() {
             const list = document.getElementById('admin-devotee-list').value.split('\n').map(s=>s.trim()).filter(s=>s.length>0);
             if(confirm("Save List?")) await setDoc(doc(db, `artifacts/${firebaseConfig.projectId}/config/settings`), { devoteeList: list }, { merge: true });
