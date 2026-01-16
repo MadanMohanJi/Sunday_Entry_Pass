@@ -356,9 +356,9 @@
 
         // Toggle Logic
         window.toggleManualDevoteeInput = function() {
+            val === "Other" ? (man.classList.remove('hidden'), man.focus()) : man.classList.add('
             const val = document.getElementById('devotee-select').value;
             const man = document.getElementById('devotee-manual');
-            val === "Other" ? (man.classList.remove('hidden'), man.focus()) : man.classList.add('hidden');
         };
         window.toggleManualAddressInput = function() {
             const val = document.getElementById('address-select').value;
